@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cup Game</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a2a3a 0%, #2c3e50 100%);
+            color: #ecf0f1;
+            overflow-x: hidden;
+        }
+        canvas {
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            max-width: 100%;
+        }
+        .game-container {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            max-width: 800px;
+        }
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        button {
+            padding: 12px 28px;
+            font-size: 18px;
+            font-weight: bold;
+            background: linear-gradient(to right, #3498db, #2980b9);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 20px rgba(52, 152, 219, 0.6);
+        }
+        button:active {
+            transform: translateY(1px);
+        }
+        button:after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: 0.5s;
+        }
+        button:hover:after {
+            left: 100%;
+        }
+        button:disabled {
+            opacity: 0.7;
+            transform: none;
+            cursor: not-allowed;
+        }
+        .stats {
+            margin-top: 20px;
+            font-size: 22px;
+            font-weight: bold;
+            color: #ecf0f1;
+            padding: 10px 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 50px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+        .rules-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.85);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .rules-modal.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .rules-content {
+            background: linear-gradient(145deg, #2c3e50, #34495e);
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+            position: relative;
+            transform: scale(0.8);
+            transition: transform 0.3s ease;
+        }
+        .rules-modal.show .rules-content {
+            transform: scale(1);
+        }
+        .rules-content h2 {
+            color: #3498db;
+            margin-top: 0;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        .rules-content ul {
+            padding-left: 20px;
+            line-height: 1.6;
+        }
+        .rules-content li {
+            margin-bottom: 10px;
+        }
+        .close-rules {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: #ecf0f1;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: none;
+        }
+        .close-rules:hover {
+            color: #3498db;
+            transform: scale(1.2);
+        }
+        .game-title {
+            font-size: 48px;
+            margin-bottom: 10px;
+            background: linear-gradient(to right, #3498db, #2ecc71);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+        }
+        .score-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+        .score-modal.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .score-content {
+            background: linear-gradient(145deg, #2c3e50, #34495e);
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+            position: relative;
+            transform: translateY(50px);
+            opacity: 0;
+            transition: all 0.5s ease;
+            max-width: 400px;
+            width: 90%;
+        }
+        .score-modal.show .score-content {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        .final-score {
+            font-size: 72px;
+            background: linear-gradient(to right, #f1c40f, #e74c3c);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 10px 0 20px;
+        }
+        .score-message {
+            font-size: 24px;
+            margin: 10px 0 30px;
+            color: #ecf0f1;
+        }
+        .play-again {
+            padding: 15px 30px;
+            font-size: 20px;
+            background: linear-gradient(to right, #f1c40f, #e74c3c);
+            box-shadow: 0 4px 15px rgba(241, 196, 15, 0.4);
+        }
+        .play-again:hover {
+            box-shadow: 0 7px 20px rgba(241, 196, 15, 0.6);
+        }
+        #canvas-container {
+            position: relative;
+            width: 600px;
+            max-width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1 class="game-title">Cup Game</h1>
+        <div id="canvas-container">
+            <canvas id="gameCanvas" width="600" height="400"></canvas>
+        </div>
+        <div class="controls">
+            <button id="startButton">Start Game</button>
+            <button id="rulesButton">Show Rules</button>
+        </div>
+        <div class="stats">
+            <span>Score: <span id="scoreCount">0</span> | Round: <span id="roundCount">1</span></span>
+        </div>
+    </div>
+
+    <!-- Rules Modal -->
+    <div class="rules-modal" id="rulesModal">
+        <div class="rules-content">
+            <button class="close-rules" id="closeRules">✕</button>
+            <h2>How to Play</h2>
+            <ul>
+                <li><strong>Objective:</strong> Find the ball hidden under one of the cups after they've been shuffled.</li>
+                <li><strong>Step 1:</strong> Watch carefully as the cup with the ball is revealed at the start of each round.</li>
+                <li><strong>Step 2:</strong> Keep your eye on this cup as they are shuffled around.</li>
+                <li><strong>Step 3:</strong> Click on the cup you think contains the ball after shuffling stops.</li>
+                <li><strong>Scoring:</strong> Earn 1 point for each correct guess.</li>
+                <li><strong>Difficulty:</strong> The shuffling speed increases with each round you win.</li>
+                <li><strong>Game Over:</strong> The game ends when you choose the wrong cup.</li>
+            </ul>
+            <p>Good luck and enjoy the game!</p>
+        </div>
+    </div>
+
+    <!-- Score Modal -->
+    <div class="score-modal" id="scoreModal">
+        <div class="score-content">
+            <h2>Game Over!</h2>
+            <div class="final-score" id="finalScore">0</div>
+            <p class="score-message" id="scoreMessage">Well played!</p>
+            <button class="play-again" id="playAgainButton">Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const startButton = document.getElementById('startButton');
+        const rulesButton = document.getElementById('rulesButton');
+        const closeRules = document.getElementById('closeRules');
+        const rulesModal = document.getElementById('rulesModal');
+        const scoreModal = document.getElementById('scoreModal');
+        const finalScoreDisplay = document.getElementById('finalScore');
+        const scoreMessage = document.getElementById('scoreMessage');
+        const playAgainButton = document.getElementById('playAgainButton');
+        const scoreCountElement = document.getElementById('scoreCount');
+        const roundCountElement = document.getElementById('roundCount');
+
+        // Show rules modal on page load
+        window.addEventListener('load', () => {
+            rulesModal.classList.add('show');
+        });
+
+        // Game variables
+        let cups = [];
+        let ballPosition = 0;
+        let gameState = 'waiting'; // waiting, showing, shuffling, guessing, result
+        let score = 0;
+        let round = 1;
+        let shuffleCount = 0;
+        let maxShuffles = 5;
+        let shuffleSpeed = 0.5;
+        let baseShuffleSpeed = 0.25; // Starting speed, will increase with rounds
+        let gameOver = false;
+        let lastTime = 0;
+        let particles = [];
+        let confetti = [];
+        let backgroundParticles = [];
+        let cupImages = [];
+        let activeShufflePair = null;
+
+        // Feedback message
+        let feedback = {
+            message: '',
+            color: '',
+            timer: 0,
+            alpha: 1 // For fade effect
+        };
+
+        // Create background particles
+        function createBackgroundParticles() {
+            for (let i = 0; i < 50; i++) {
+                backgroundParticles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    size: Math.random() * 3 + 1,
+                    speed: Math.random() * 0.5 + 0.1,
+                    opacity: Math.random() * 0.5 + 0.1
+                });
+            }
+        }
+
+        // Draw background particles
+        function drawBackgroundParticles() {
+            ctx.save();
+            backgroundParticles.forEach(particle => {
+                ctx.fillStyle = `rgba(255, 255, 255, ${particle.opacity})`;
+                ctx.beginPath();
+                ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Move particles upwards
+                particle.y -= particle.speed;
+                
+                // Reset particles when they go off-screen
+                if (particle.y < 0) {
+                    particle.y = canvas.height;
+                    particle.x = Math.random() * canvas.width;
+                }
+            });
+            ctx.restore();
+        }
+
+        // Cup class with animations
+        class Cup {
+            constructor(x, y, width, height) {
+                this.x = x;
+                this.y = y;
+                this.targetX = x;
+                this.width = width;
+                this.height = height;
+                this.hasBall = false;
+                this.revealed = false;
+                this.clicked = false;
+                this.lifted = false;
+                this.liftHeight = 0;
+                this.targetLiftHeight = 0;
+                this.angle = 0;
+                this.scaleY = 1;
+                this.shadow = 0;
+                this.hoverEffect = 0;
+                this.isHovered = false;
+                this.shakeAmount = 0;
+                this.pulseEffect = 0;
+                this.pulseDirection = 1;
+                this.id = Math.floor(Math.random() * 10000);
+            }
+
+            draw() {
+                // Calculate position with shake effect
+                const drawX = this.x + (Math.random() - 0.5) * this.shakeAmount;
+                const drawY = this.y + (Math.random() - 0.5) * this.shakeAmount;
+                
+                // Draw glow for hovered cup in guessing state
+                if (gameState === 'guessing' && this.isHovered) {
+                    ctx.save();
+                    const glowSize = 10 + Math.sin(Date.now() * 0.01) * 3;
+                    const gradient = ctx.createRadialGradient(
+                        drawX, drawY, this.width/2,
+                        drawX, drawY, this.width/2 + glowSize
+                    );
+                    gradient.addColorStop(0, 'rgba(52, 152, 219, 0.5)');
+                    gradient.addColorStop(1, 'rgba(52, 152, 219, 0)');
+                    ctx.fillStyle = gradient;
+                    ctx.beginPath();
+                    ctx.arc(drawX, drawY, this.width/2 + glowSize, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                }
+
+                // Draw shadow
+                ctx.fillStyle = `rgba(0, 0, 0, ${0.2 + this.shadow * 0.05})`;
+                ctx.beginPath();
+                ctx.ellipse(drawX, drawY + this.height + 10 - this.liftHeight, this.width/2 + 10, 5 + this.shadow, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Save context for rotation
+                ctx.save();
+                ctx.translate(drawX, drawY);
+                ctx.rotate(this.angle);
+                ctx.scale(1, this.scaleY);
+                ctx.translate(-drawX, -drawY);
+
+                const liftY = this.liftHeight;
+                const pulseScale = 1 + this.pulseEffect * 0.05;
+
+                // Draw cup based on lifted state
+                if (this.lifted) {
+                    // Cup gradient (lifted)
+                    const cupGradient = ctx.createLinearGradient(
+                        drawX - this.width/2 * pulseScale, drawY - liftY, 
+                        drawX + this.width/2 * pulseScale, drawY - liftY
+                    );
+                    cupGradient.addColorStop(0, this.clicked ? '#a9331f' : '#e74c3c');
+                    cupGradient.addColorStop(0.5, this.clicked ? '#e74c3c' : '#ff6b6b');
+                    cupGradient.addColorStop(1, this.clicked ? '#a9331f' : '#e74c3c');
+                    ctx.fillStyle = cupGradient;
+
+                    // Cup body (inverted trapezoid) - lifted position
+                    ctx.beginPath();
+                    ctx.moveTo(drawX - this.width/2.5 * pulseScale, drawY - liftY);
+                    ctx.lineTo(drawX + this.width/2.5 * pulseScale, drawY - liftY);
+                    ctx.lineTo(drawX + this.width/2 * pulseScale, drawY + this.height - liftY);
+                    ctx.lineTo(drawX - this.width/2 * pulseScale, drawY + this.height - liftY);
+                    ctx.closePath();
+                    ctx.fill();
+
+                    // Cup rim with highlight
+                    const rimGradient = ctx.createLinearGradient(
+                        drawX - this.width/2.5 * pulseScale - 5, drawY - liftY,
+                        drawX - this.width/2.5 * pulseScale - 5, drawY - liftY + 5
+                    );
+                    rimGradient.addColorStop(0, '#d35400');
+                    rimGradient.addColorStop(1, '#a9331f');
+                    ctx.fillStyle = rimGradient;
+                    ctx.fillRect(drawX - this.width/2.5 * pulseScale - 5, drawY - liftY, this.width/1.25 * pulseScale + 10, 5);
+
+                    // Highlight on cup rim
+                    ctx.fillStyle = "rgba(255, 255, 255, 0.3)";
+                    ctx.fillRect(drawX - this.width/2.5 * pulseScale - 5, drawY - liftY, this.width/1.25 * pulseScale + 10, 2);
+                } else {
+                    // Cup gradient (normal)
+                    const cupGradient = ctx.createLinearGradient(
+                        drawX - this.width/2 * pulseScale, drawY - liftY,
+                        drawX + this.width/2 * pulseScale, drawY - liftY
+                    );
+                    cupGradient.addColorStop(0, this.clicked ? '#a9331f' : '#e74c3c');
+                    cupGradient.addColorStop(0.5, this.clicked ? '#e74c3c' : '#ff6b6b');
+                    cupGradient.addColorStop(1, this.clicked ? '#a9331f' : '#e74c3c');
+                    ctx.fillStyle = cupGradient;
+
+                    // Cup body (inverted trapezoid)
+                    ctx.beginPath();
+                    ctx.moveTo(drawX - this.width/2.5 * pulseScale, drawY - liftY);
+                    ctx.lineTo(drawX + this.width/2.5 * pulseScale, drawY - liftY);
+                    ctx.lineTo(drawX + this.width/2 * pulseScale, drawY + this.height - liftY);
+                    ctx.lineTo(drawX - this.width/2 * pulseScale, drawY + this.height - liftY);
+                    ctx.closePath();
+                    ctx.fill();
+
+                    // Cup rim with highlight
+                    const rimGradient = ctx.createLinearGradient(
+                        drawX - this.width/2.5 * pulseScale - 5, drawY - liftY,
+                        drawX - this.width/2.5 * pulseScale - 5, drawY - liftY + 5
+                    );
+                    rimGradient.addColorStop(0, '#d35400');
+                    rimGradient.addColorStop(1, '#a9331f');
+                    ctx.fillStyle = rimGradient;
+                    ctx.fillRect(drawX - this.width/2.5 * pulseScale - 5, drawY - liftY, this.width/1.25 * pulseScale + 10, 5);
+
+                    // Highlight on cup rim
+                    ctx.fillStyle = "rgba(255, 255, 255, 0.3)";
+                    ctx.fillRect(drawX - this.width/2.5 * pulseScale - 5, drawY - liftY, this.width/1.25 * pulseScale + 10, 2);
+                }
+
+                // Restore context
+                ctx.restore();
+
+                // Draw ball if it's showing time or if cup is revealed
+                if ((gameState === 'showing' && this.hasBall) || (this.revealed && this.hasBall)) {
+                    this.drawBall(drawX, drawY);
+                }
+
+                // Hover effect - if in guessing state and mouse is over cup
+                if (gameState === 'guessing' && this.hoverEffect > 0) {
+                    ctx.strokeStyle = `rgba(255, 255, 255, ${this.hoverEffect})`;
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.moveTo(drawX - this.width/2.5 - 5, drawY - this.liftHeight);
+                    ctx.lineTo(drawX + this.width/2.5 + 5, drawY - this.liftHeight);
+                    ctx.lineTo(drawX + this.width/2 + 5, drawY + this.height - this.liftHeight);
+                    ctx.lineTo(drawX - this.width/2 - 5, drawY + this.height - this.liftHeight);
+                    ctx.closePath();
+                    ctx.stroke();
+                }
+            }
+
+            drawBall(drawX, drawY) {
+                const ballY = drawY + this.height - this.liftHeight + 15;
+
+                // Ball shadow
+                ctx.fillStyle = "rgba(0, 0, 0, 0.2)";
+                ctx.beginPath();
+                ctx.ellipse(drawX, ballY + 15, 10, 3, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Ball glow
+                const gradient = ctx.createRadialGradient(
+                    drawX, ballY, 0,
+                    drawX, ballY, 25
+                );
+                gradient.addColorStop(0, 'rgba(255, 255, 255, 0.4)');
+                gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+                ctx.beginPath();
+                ctx.arc(drawX, ballY, 25, 0, Math.PI * 2);
+                ctx.fillStyle = gradient;
+                ctx.fill();
+
+                // Ball
+                ctx.beginPath();
+                ctx.arc(drawX, ballY, 15, 0, Math.PI * 2);
+                
+                // Ball gradient
+                const ballGradient = ctx.createRadialGradient(
+                    drawX - 5, ballY - 5, 0,
+                    drawX, ballY, 15
+                );
+                ballGradient.addColorStop(0, '#f1c40f');
+                ballGradient.addColorStop(1, '#f39c12');
+                ctx.fillStyle = ballGradient;
+                ctx.fill();
+                
+                ctx.strokeStyle = '#f39c12';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                // Highlight on ball
+                ctx.beginPath();
+                ctx.arc(drawX - 5, ballY - 5, 5, 0, Math.PI * 2);
+                ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
+                ctx.fill();
+                
+                // Sparkle effect on ball
+                const time = Date.now() * 0.005;
+                for (let i = 0; i < 3; i++) {
+                    const angle = time + i * Math.PI * 2 / 3;
+                    const sparkleX = drawX + Math.cos(angle) * 10;
+                    const sparkleY = ballY + Math.sin(angle) * 10;
+                    
+                    const sparkleSize = 2 + Math.sin(time + i) * 1;
+                    
+                    ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+                    ctx.beginPath();
+                    ctx.arc(sparkleX, sparkleY, sparkleSize, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            update(deltaTime) {
+                // Smooth movement to target position
+                if (Math.abs(this.x - this.targetX) > 0.1) {
+                    const dx = this.targetX - this.x;
+                    this.x += dx * 0.1 * shuffleSpeed;
+
+                    // Add subtle bounce effect
+                    this.angle = Math.sin(Date.now() * 0.01) * 0.02;
+                    this.scaleY = 1 + Math.sin(Date.now() * 0.01) * 0.02;
+                    
+                    // Shadow effect
+                    this.shadow = Math.abs(dx) * 0.1;
+                    
+                    // Shake effect during fast movement
+                    if (Math.abs(dx) > 5) {
+                        this.shakeAmount = Math.min(3, Math.abs(dx) * 0.05);
+                    } else {
+                        this.shakeAmount = Math.max(0, this.shakeAmount - 0.2);
+                    }
+                } else {
+                    this.x = this.targetX;
+                    this.angle = 0;
+                    this.scaleY = 1;
+                    this.shadow = 0;
+                    this.shakeAmount = Math.max(0, this.shakeAmount - 0.2);
+                }
+
+                // Smooth lift animation
+                if (Math.abs(this.liftHeight - this.targetLiftHeight) > 0.1) {
+                    const dh = this.targetLiftHeight - this.liftHeight;
+                    this.liftHeight += dh * 0.1;
+                } else {
+                    this.liftHeight = this.targetLiftHeight;
+                }
+
+                // Update hover effect
+                if (this.hoverEffect > 0 && !this.isHovered) {
+                    this.hoverEffect -= 0.05;
+                    if (this.hoverEffect < 0) this.hoverEffect = 0;
+                } else if (this.hoverEffect < 1 && this.isHovered) {
+                    this.hoverEffect += 0.05;
+                    if (this.hoverEffect > 1) this.hoverEffect = 1;
+                }
+                
+                // Update pulse effect
+                if (this.isHovered || this.hasBall) {
+                    this.pulseEffect += 0.1 * this.pulseDirection;
+                    if (this.pulseEffect >= 1) {
+                        this.pulseEffect = 1;
+                        this.pulseDirection = -1;
+                    } else if (this.pulseEffect <= 0) {
+                        this.pulseEffect = 0;
+                        this.pulseDirection = 1;
+                    }
+                } else {
+                    this.pulseEffect = 0;
+                }
+            }
+
+            contains(mouseX, mouseY) {
+                return mouseX >= this.x - this.width/2 && 
+                       mouseX <= this.x + this.width/2 && 
+                       mouseY >= this.y - this.liftHeight && 
+                       mouseY <= this.y + this.height - this.liftHeight;
+            }
+
+            lift() {
+                this.lifted = true;
+                this.targetLiftHeight = 40;
+            }
+
+            lower() {
+                this.lifted = false;
+                this.targetLiftHeight = 0;
+            }
+        }
+
+        // Particle system for celebrations
+        class Particle {
+            constructor(x, y, color, velocity = 8) {
+                this.x = x;
+                this.y = y;
+                this.vx = (Math.random() - 0.5) * velocity;
+                this.vy = (Math.random() - 0.5) * velocity - 3;
+                this.size = Math.random() * 5 + 2;
+                this.color = color;
+                this.life = 60 + Math.random() * 60;
+                this.maxLife = this.life;
+                this.rotation = Math.random() * Math.PI * 2;
+                this.rotationSpeed = (Math.random() - 0.5) * 0.2;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.vy += 0.1; // Gravity
+                this.life--;
+                this.rotation += this.rotationSpeed;
+            }
+
+            draw() {
+                const opacity = this.life / this.maxLife;
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rotation);
+                ctx.fillStyle = this.color.replace(')', `, ${opacity})`).replace('rgb', 'rgba');
+                ctx.beginPath();
+                ctx.arc(0, 0, this.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        // Confetti particle for end game celebration
+        class Confetti {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = -20;
+                this.size = Math.random() * 10 + 5;
+                this.color = `hsl(${Math.random() * 360}, 100%, 50%)`;
+                this.speed = Math.random() * 5 + 2;
+                this.wobble = Math.random() * 10;
+                this.wobbleSpeed = Math.random() * 0.1;
+                this.rotation = Math.random() * Math.PI * 2;
+                this.rotationSpeed = (Math.random() - 0.5) * 0.2;
+                this.width = Math.random() * 8 + 4;
+                this.height = Math.random() * 12 + 8;
+                this.flip = Math.random() > 0.5;
+                this.opacity = 0;
+                this.fadeSpeed = Math.random() * 0.03 + 0.02;
+            }
+
+            update() {
+                this.y += this.speed;
+                this.x += Math.sin(this.y * this.wobbleSpeed) * this.wobble;
+                this.rotation += this.rotationSpeed;
+                
+                // Fade in
+                if (this.opacity < 1) {
+                    this.opacity += this.fadeSpeed;
+                    this.opacity += this.fadeSpeed;
+                }
+            }
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rotation);
+                ctx.fillStyle = this.color.replace(')', `, ${this.opacity})`).replace('rgb', 'rgba');
+                if (this.flip) {
+                    ctx.fillRect(-this.width / 2, -this.height / 2, this.width, this.height);
+                } else {
+                    ctx.beginPath();
+                    ctx.moveTo(0, -this.height / 2);
+                    ctx.lineTo(this.width / 2, 0);
+                    ctx.lineTo(0, this.height / 2);
+                    ctx.lineTo(-this.width / 2, 0);
+                    ctx.closePath();
+                    ctx.fill();
+                }
+                ctx.restore();
+            }
+        }
+
+        // Initialize game
+        function initGame() {
+            // Reset game state
+            cups = [];
+            gameState = 'waiting';
+            score = 0;
+            round = 1;
+            gameOver = false;
+            shuffleSpeed = baseShuffleSpeed;
+            particles = [];
+            confetti = [];
+            
+            // Create cups
+            const cupWidth = 80;
+            const cupHeight = 100;
+            const margin = 100;
+            const totalWidth = cupWidth * 3 + margin * 2;
+            const startX = (canvas.width - totalWidth) / 2 + cupWidth / 2;
+            
+            for (let i = 0; i < 3; i++) {
+                cups.push(new Cup(startX + i * (cupWidth + margin), canvas.height / 2 - 10, cupWidth, cupHeight));
+            }
+            
+            // Place ball under random cup
+            ballPosition = Math.floor(Math.random() * cups.length);
+            cups[ballPosition].hasBall = true;
+            
+            // Update UI
+            scoreCountElement.textContent = score.toString();
+            roundCountElement.textContent = round.toString();
+            startButton.disabled = false;
+            startButton.textContent = 'Start Game';
+            
+            // Create background particles
+            createBackgroundParticles();
+        }
+
+        // Toggle rules modal
+        function toggleRulesModal() {
+            rulesModal.classList.toggle('show');
+        }
+
+        // Show score modal
+        function showScoreModal() {
+            finalScoreDisplay.textContent = score.toString();
+            
+            // Generate message based on score
+            if (score === 0) {
+                scoreMessage.textContent = "Better luck next time!";
+            } else if (score < 5) {
+                scoreMessage.textContent = "Good effort!";
+            } else if (score < 10) {
+                scoreMessage.textContent = "Well played!";
+            } else if (score < 15) {
+                scoreMessage.textContent = "Excellent job!";
+            } else {
+                scoreMessage.textContent = "You're a Cup Game master!";
+            }
+            
+            scoreModal.classList.add('show');
+            
+            // Create celebration confetti
+            for (let i = 0; i < 100; i++) {
+                confetti.push(new Confetti());
+            }
+        }
+
+        // Update all game objects
+        function update(deltaTime) {
+            // Update cups
+            cups.forEach(cup => cup.update(deltaTime));
+            
+            // Update particles
+            particles = particles.filter(particle => particle.life > 0);
+            particles.forEach(particle => particle.update());
+            
+            // Update confetti
+            confetti = confetti.filter(c => c.y < canvas.height + 20);
+            confetti.forEach(c => c.update());
+            
+            // Update feedback message
+            if (feedback.timer > 0) {
+                feedback.timer -= deltaTime;
+                if (feedback.timer <= 0) {
+                    feedback.alpha = 0;
+                } else if (feedback.timer < 1000) {
+                    feedback.alpha = feedback.timer / 1000;
+                }
+            }
+            
+            // Handle game state
+            switch (gameState) {
+                case 'showing':
+                    if (Date.now() - lastTime > 2000) {
+                        cups.forEach(cup => cup.lower());
+                        gameState = 'shuffling';
+                        shuffleCount = 0;
+                        lastTime = Date.now();
+                    }
+                    break;
+                    
+                case 'shuffling':
+                    // Perform shuffling
+                    if (Date.now() - lastTime > 500 / shuffleSpeed) {
+                        performShuffle();
+                        shuffleCount++;
+                        lastTime = Date.now();
+                        
+                        if (shuffleCount >= maxShuffles + round) {
+                            gameState = 'guessing';
+                            activeShufflePair = null;
+                        }
+                    }
+                    break;
+                    
+                case 'result':
+                    if (Date.now() - lastTime > 1500) {
+                        if (gameOver) {
+                            showScoreModal();
+                        } else {
+                            startNextRound();
+                        }
+                    }
+                    break;
+            }
+        }
+
+        // Perform a single shuffle step
+        function performShuffle() {
+            // Choose two random cups to shuffle
+            let cupIndexA, cupIndexB;
+            
+            // Don't shuffle the same pair twice in a row
+            do {
+                cupIndexA = Math.floor(Math.random() * cups.length);
+                do {
+                    cupIndexB = Math.floor(Math.random() * cups.length);
+                } while (cupIndexA === cupIndexB);
+            } while (
+                activeShufflePair && 
+                ((activeShufflePair[0] === cupIndexA && activeShufflePair[1] === cupIndexB) ||
+                 (activeShufflePair[0] === cupIndexB && activeShufflePair[1] === cupIndexA))
+            );
+            
+            activeShufflePair = [cupIndexA, cupIndexB];
+            
+            // Swap cup positions
+            const tempX = cups[cupIndexA].targetX;
+            cups[cupIndexA].targetX = cups[cupIndexB].targetX;
+            cups[cupIndexB].targetX = tempX;
+            
+            // If one of them has the ball, update ball position
+            if (cups[cupIndexA].hasBall) {
+                cups[cupIndexA].hasBall = false;
+                cups[cupIndexB].hasBall = true;
+                ballPosition = cupIndexB;
+            } else if (cups[cupIndexB].hasBall) {
+                cups[cupIndexB].hasBall = false;
+                cups[cupIndexA].hasBall = true;
+                ballPosition = cupIndexA;
+            }
+        }
+
+        // Start the next round
+        function startNextRound() {
+            round++;
+            cups.forEach(cup => {
+                cup.revealed = false;
+                cup.clicked = false;
+                cup.lower();
+            });
+            
+            gameState = 'showing';
+            shuffleCount = 0;
+            
+            // Increase difficulty with each round
+            shuffleSpeed = baseShuffleSpeed + (round * 0.10);
+            
+            // Position cups back to starting positions
+            const cupWidth = 80;
+            const margin = 100;
+            const totalWidth = cupWidth * 3 + margin * 2;
+            const startX = (canvas.width - totalWidth) / 2 + cupWidth / 2;
+            
+            for (let i = 0; i < cups.length; i++) {
+                cups[i].targetX = startX + i * (cupWidth + margin);
+                cups[i].hasBall = false;
+            }
+            
+            // Place ball under random cup
+            ballPosition = Math.floor(Math.random() * cups.length);
+            cups[ballPosition].hasBall = true;
+            cups[ballPosition].lift();
+            
+            lastTime = Date.now();
+            
+            // Update UI
+            roundCountElement.textContent = round.toString();
+            
+            // Display feedback
+            feedback = {
+                message: `Round ${round} - Watch carefully!`,
+                color: '#3498db',
+                timer: 2000,
+                alpha: 1
+            };
+        }
+
+        // Render the game
+        function render() {
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw background
+            drawBackgroundParticles();
+            
+            // Draw cups
+            cups.forEach(cup => cup.draw());
+            
+            // Draw particles
+            particles.forEach(particle => particle.draw());
+            
+            // Draw confetti for game over celebration
+            if (scoreModal.classList.contains('show')) {
+                confetti.forEach(c => c.draw());
+            }
+            
+            // Draw feedback message
+            if (feedback.timer > 0 && feedback.alpha > 0) {
+                ctx.save();
+                ctx.font = 'bold 24px "Segoe UI", sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillStyle = feedback.color.replace(')', `, ${feedback.alpha})`).replace('rgb', 'rgba');
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+                ctx.shadowBlur = 5;
+                ctx.fillText(feedback.message, canvas.width / 2, 100);
+                ctx.restore();
+            }
+            
+            // Draw instructions based on game state
+            if (gameState === 'waiting') {
+                ctx.font = '24px "Segoe UI", sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillStyle = '#ecf0f1';
+                ctx.fillText('Press "Start Game" to begin!', canvas.width / 2, canvas.height - 50);
+            } else if (gameState === 'guessing') {
+                ctx.font = '24px "Segoe UI", sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillStyle = '#ecf0f1';
+                ctx.fillText('Find the ball! Click on a cup.', canvas.width / 2, canvas.height - 50);
+            }
+        }
+
+        // Game loop
+        function gameLoop(timestamp) {
+            const deltaTime = timestamp - (lastTime || timestamp);
+            update(deltaTime);
+            render();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Check if a cup was clicked
+        function checkCupClick(event) {
+            if (gameState !== 'guessing') return;
+            
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = event.clientX - rect.left;
+            const mouseY = event.clientY - rect.top;
+            
+            for (let i = 0; i < cups.length; i++) {
+                if (cups[i].contains(mouseX, mouseY)) {
+                    cups[i].lift();
+                    cups[i].clicked = true;
+                    cups[i].revealed = true;
+                    
+                    // Check if correct cup was clicked
+                    const correct = cups[i].hasBall;
+                    
+                    if (correct) {
+                        // Correct guess!
+                        score++;
+                        scoreCountElement.textContent = score.toString();
+                        
+                        // Create particles for celebration
+                        for (let j = 0; j < 30; j++) {
+                            particles.push(new Particle(
+                                cups[i].x,
+                                cups[i].y + cups[i].height / 2,
+                                `rgb(${Math.floor(Math.random() * 100 + 155)}, ${Math.floor(Math.random() * 100 + 155)}, ${Math.floor(Math.random() * 100 + 155)})`
+                            ));
+                        }
+                        
+                        feedback = {
+                            message: 'Great job! You found it!',
+                            color: '#2ecc71',
+                            timer: 2000,
+                            alpha: 1
+                        };
+                    } else {
+                        // Wrong guess
+                        gameOver = true;
+                        
+                        // Reveal the correct cup
+                        cups[ballPosition].lift();
+                        cups[ballPosition].revealed = true;
+                        
+                        feedback = {
+                            message: 'Game Over! Wrong cup.',
+                            color: '#e74c3c',
+                            timer: 2000,
+                            alpha: 1
+                        };
+                    }
+                    
+                    gameState = 'result';
+                    lastTime = Date.now();
+                    break;
+                }
+            }
+        }
+
+        // Check if mouse is over a cup
+        function checkCupHover(event) {
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = event.clientX - rect.left;
+            const mouseY = event.clientY - rect.top;
+            
+            let hovering = false;
+            
+            for (let i = 0; i < cups.length; i++) {
+                const isOver = cups[i].contains(mouseX, mouseY);
+                cups[i].isHovered = isOver;
+                
+                if (isOver && gameState === 'guessing') {
+                    hovering = true;
+                    canvas.style.cursor = 'pointer';
+                }
+            }
+            
+            if (!hovering) {
+                canvas.style.cursor = 'default';
+            }
+        }
+
+        // Start game
+        function startGame() {
+            gameState = 'showing';
+            startButton.disabled = true;
+            startButton.textContent = 'Game in progress...';
+            
+            // Show which cup has the ball
+            cups[ballPosition].lift();
+            lastTime = Date.now();
+            
+            // Display feedback
+            feedback = {
+                message: 'Watch carefully!',
+                color: '#3498db',
+                timer: 2000,
+                alpha: 1
+            };
+        }
+
+        // Event listeners
+        canvas.addEventListener('click', checkCupClick);
+        canvas.addEventListener('mousemove', checkCupHover);
+        startButton.addEventListener('click', startGame);
+        rulesButton.addEventListener('click', toggleRulesModal);
+        closeRules.addEventListener('click', toggleRulesModal);
+        playAgainButton.addEventListener('click', () => {
+            scoreModal.classList.remove('show');
+            initGame();
+        });
+
+        // Initialize and start the game loop
+        initGame();
+        requestAnimationFrame(gameLoop);
+    </script>
+</body>
+</html>

@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Color Recognition Game</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    /* General Styles */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #ff7eb3, #ff758c, #ff7e5f, #feb47b);
+      color: #333;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .container {
+      background: rgba(255, 255, 255, 0.9);
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      width: 100%;
+      max-width: 450px;
+      margin: 0 auto;
+      overflow: hidden;
+    }
+
+    h1 {
+      font-size: clamp(1.8rem, 5vw, 2.5rem);
+      margin-bottom: 10px;
+      color: #ff6f61;
+      word-wrap: break-word;
+    }
+
+    p {
+      font-size: clamp(0.9rem, 3vw, 1.1rem);
+      margin-bottom: 20px;
+      color: #555;
+    }
+
+    /* Score Display */
+    #score-display {
+      font-size: clamp(1rem, 3vw, 1.2rem);
+      font-weight: bold;
+      margin: 10px 0;
+      color: #ff6f61;
+    }
+
+    /* Instructions */
+    .instructions {
+      text-align: left;
+      margin-bottom: 20px;
+    }
+
+    .instructions ul {
+      margin-left: 20px;
+      margin-bottom: 25px;
+      padding-right: 10px;
+    }
+
+    .instructions li {
+      margin-bottom: 8px;
+      font-size: clamp(0.85rem, 2.5vw, 1rem);
+    }
+
+    /* Color Display Box */
+    #color-box {
+      width: clamp(100px, 40vw, 150px);
+      height: clamp(100px, 40vw, 150px);
+      margin: 0 auto 20px;
+      border: 5px solid #fff;
+      border-radius: 15px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Input Section */
+    .input-section {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    #color-input {
+      padding: 10px;
+      border: 2px solid #ddd;
+      border-radius: 5px;
+      font-size: 1rem;
+      flex: 1;
+      min-width: 150px;
+      max-width: 100%;
+    }
+
+    #submit-btn, #next-btn, #start-game-btn, #play-again-btn {
+      padding: 10px 15px;
+      background: #ff6f61;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      font-size: clamp(0.9rem, 2.5vw, 1rem);
+      cursor: pointer;
+      transition: background 0.3s ease;
+      white-space: nowrap;
+    }
+
+    #start-game-btn, #play-again-btn {
+      display: block;
+      margin: 0 auto;
+      padding: 12px 30px;
+      font-size: clamp(1rem, 3vw, 1.2rem);
+    }
+
+    #submit-btn:hover, #next-btn:hover, #start-game-btn:hover, #play-again-btn:hover {
+      background: #e65a50;
+      transform: scale(1.05);
+    }
+
+    /* Feedback Section */
+    #feedback {
+      font-size: clamp(1rem, 3vw, 1.2rem);
+      margin-bottom: 10px;
+      word-wrap: break-word;
+    }
+
+    /* Attempts Counter */
+    #attempts {
+      font-size: clamp(0.9rem, 2.5vw, 1rem);
+      margin-bottom: 10px;
+      color: #555;
+    }
+
+    /* Hint Button - Updated Styling */
+    .hint-container {
+      margin: 15px auto;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      max-width: 300px;
+    }
+    
+    #hint-btn {
+      background: linear-gradient(135deg, #5b86e5, #36d1dc);
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 25px;
+      font-size: clamp(0.9rem, 2.5vw, 1rem);
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(91, 134, 229, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      width: fit-content;
+    }
+    
+    #hint-btn:before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0));
+      transform: translateX(-100%);
+      transition: transform 0.6s ease;
+    }
+    
+    #hint-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 7px 20px rgba(91, 134, 229, 0.4);
+    }
+    
+    #hint-btn:hover:before {
+      transform: translateX(100%);
+    }
+    
+    #hint-btn:active {
+      transform: translateY(-1px);
+      box-shadow: 0 3px 10px rgba(91, 134, 229, 0.3);
+    }
+    
+    #hint-counter {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      background: #ff6f61;
+      color: white;
+      border-radius: 50%;
+      width: 22px;
+      height: 22px;
+      font-size: 0.8rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    
+    #hint-text {
+      font-style: italic;
+      margin-top: 15px;
+      color: #666;
+      font-size: clamp(0.9rem, 2.5vw, 1rem);
+      width: 100%;
+      background: rgba(244, 245, 252, 0.8);
+      padding: 12px 15px;
+      border-radius: 10px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+      opacity: 0;
+      height: 0;
+      transition: all 0.3s ease;
+      overflow: hidden;
+      word-wrap: break-word;
+    }
+    
+    #hint-text.show {
+      opacity: 1;
+      height: auto;
+      min-height: 50px;
+    }
+
+    /* Result Section */
+    #result {
+      font-size: clamp(1rem, 3vw, 1.2rem);
+      font-weight: bold;
+      margin-top: 20px;
+    }
+
+    /* Celebration Emojis */
+    #celebration {
+      font-size: clamp(1.5rem, 4vw, 2rem);
+      margin-top: 20px;
+    }
+
+    /* Final Results */
+    .final-results {
+      background: rgba(255, 255, 255, 0.5);
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      word-wrap: break-word;
+    }
+
+    .final-results p {
+      font-size: clamp(1rem, 3vw, 1.3rem);
+      margin: 15px 0;
+    }
+
+    /* Media Queries for different screen sizes */
+    @media (max-width: 480px) {
+      .container {
+        padding: 15px;
+      }
+      
+      .input-section {
+        flex-direction: column;
+      }
+      
+      #color-input {
+        width: 100%;
+      }
+      
+      #submit-btn, #next-btn {
+        width: 100%;
+      }
+    }
+
+    @media (max-height: 700px) {
+      body {
+        padding: 10px;
+      }
+      
+      .container {
+        padding: 15px;
+      }
+      
+      #color-box {
+        width: 100px;
+        height: 100px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container" id="game-container">
+    <!-- This container will be dynamically populated by JavaScript -->
+  </div>
+  
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const container = document.getElementById("game-container");
+      
+      // Colors organized by difficulty from basic to hard (no shuffling)
+      const colors = [
+        // Level 1: Primary and Basic Colors (Very Easy)
+        "red", "blue", "green", "yellow", "black", "white", "orange", "purple", "pink", "brown",
+        
+        // Level 2: Common Secondary Colors (Easy)
+        "gray", "cyan", "lime", "navy", "olive", "teal", "maroon", "violet", "beige", "tan",
+        
+        // Level 3: Less Common Colors (Medium)
+        "magenta", "turquoise", "coral", "crimson", "indigo", "gold", "silver", "lavender", "salmon", "khaki",
+        
+        // Level 4: Specific Shades (Hard)
+        "periwinkle", "burgundy", "chartreuse", "azure", "scarlet", "emerald", "amber", "slate", "sienna", "orchid",
+        
+        // Level 5: Exotic Colors (Very Hard)
+        "vermilion", "cerulean", "fuchsia", "mauve", "taupe", "celadon", "alabaster", "puce", "ochre", "sepia"
+      ];
+
+      // Color hints
+      const colorHints = {
+        // Level 1
+        "red": "The color of a stop sign or ripe tomato",
+        "blue": "The color of a clear sky",
+        "green": "The color of grass or leaves",
+        "yellow": "The color of a banana or the sun",
+        "black": "The darkest color, like the night sky without stars",
+        "white": "The color of snow or paper",
+        "orange": "The color of a carrot or pumpkin",
+        "purple": "The color of grapes or eggplant",
+        "pink": "A lighter shade of red, like cotton candy",
+        "brown": "The color of chocolate or tree bark",
+        
+        // Level 2
+        "gray": "Between black and white",
+        "cyan": "A bright blue-green color",
+        "lime": "A bright yellowish-green color",
+        "navy": "A very dark blue, like military uniforms",
+        "olive": "A dark yellowish-green, like the food of the same name",
+        "teal": "A medium blue-green color",
+        "maroon": "A dark reddish-brown color",
+        "violet": "Similar to purple but with more blue",
+        "beige": "A light sandy brown color",
+        "tan": "A pale brown color, like light wood",
+        
+        // Level 3
+        "magenta": "A bright purplish-red color used in printing",
+        "turquoise": "A blue-green color like the gemstone",
+        "coral": "A pinkish-orange color like the sea organism",
+        "crimson": "A deep, rich red color",
+        "indigo": "A deep purple-blue color",
+        "gold": "The color of the precious metal",
+        "silver": "The color of the precious metal, grayish and shiny",
+        "lavender": "A light purple color like the flower",
+        "salmon": "A pinkish-orange color like the fish",
+        "khaki": "A light brown-yellow color used in military clothing",
+        
+        // Level 4
+        "periwinkle": "A light blue-purple color",
+        "burgundy": "A dark red-purple color like wine",
+        "chartreuse": "A yellow-green color, between yellow and lime",
+        "azure": "A bright, sky-blue color",
+        "scarlet": "A bright red with a slight orange tinge",
+        "emerald": "A bright green like the gemstone",
+        "amber": "A yellow-orange color like the fossilized resin",
+        "slate": "A dark gray with a slight blue tinge",
+        "sienna": "A reddish-brown earth color",
+        "orchid": "A pinkish-purple color like the flower",
+        
+        // Level 5
+        "vermilion": "A bright red-orange color",
+        "cerulean": "A deep sky-blue color",
+        "fuchsia": "A vivid purplish-red color",
+        "mauve": "A pale purple color",
+        "taupe": "A dark brownish-gray color",
+        "celadon": "A pale green color like Chinese pottery",
+        "alabaster": "An off-white color like the mineral",
+        "puce": "A dark reddish-brown or purplish-brown color",
+        "ochre": "A yellow-brown earth pigment",
+        "sepia": "A reddish-brown color like old photographs"
+      };
+
+      let currentColorIndex = 0;
+      let currentColor = "";
+      let attempts = 3;
+      let score = 0;
+      let totalQuestionsAnswered = 0;
+      let hintsUsed = 0;
+      
+      // Create game instruction and start button
+      function showInstructions() {
+        container.innerHTML = `
+          <h1>Color Recognition Game</h1>
+          <div class="instructions">
+            <p>Welcome to the Color Recognition Game!</p>
+            <h3>Instructions:</h3>
+            <ul>
+              <li>You will be shown colors one by one</li>
+              <li>Type the name of the color you see</li>
+              <li>You have 3 attempts for each color</li>
+              <li>Each correct answer gives you 1 point</li>
+              <li>If you answer incorrectly, your score resets</li>
+              <li>Colors will progressively get more difficult</li>
+              <li>You can use hints, but they will affect your final score</li>
+            </ul>
+            <button id="start-game-btn">Start Game</button>
+          </div>
+        `;
+        
+        document.getElementById("start-game-btn").addEventListener("click", initGame);
+      }
+      
+      // Initialize the game UI
+      function initGame() {
+        container.innerHTML = `
+          <h1>Color Recognition Game</h1>
+          <p>Guess the color displayed in the box below. You have 3 attempts!</p>
+          <div id="score-display">Score: 0</div>
+          
+          <!-- Color Display Box -->
+          <div id="color-box"></div>
+          
+          <!-- User Input -->
+          <div class="input-section">
+            <input type="text" id="color-input" placeholder="Type the color name">
+            <button id="submit-btn">Submit</button>
+            <button id="next-btn" style="display: none;">Next Color</button>
+          </div>
+          
+          <!-- Feedback Section -->
+          <div id="feedback"></div>
+          
+          <!-- Hint Section -->
+          <div class="hint-container">
+            <button id="hint-btn">
+              <span>💡 Need a Hint?</span>
+              <span id="hint-counter" style="display: none;">0</span>
+            </button>
+            <div id="hint-text"></div>
+          </div>
+          
+          <!-- Attempts Counter -->
+          <div id="attempts">Attempts left: 3</div>
+          
+          <!-- Result Section -->
+          <div id="result"></div>
+          
+          <!-- Celebration Emojis -->
+          <div id="celebration" style="display: none;">🎉✨</div>
+        `;
+        
+        // Set up game elements and event listeners
+        const colorBox = document.getElementById("color-box");
+        const colorInput = document.getElementById("color-input");
+        const submitBtn = document.getElementById("submit-btn");
+        const nextBtn = document.getElementById("next-btn");
+        const hintBtn = document.getElementById("hint-btn");
+        
+        // Add event listeners
+        submitBtn.addEventListener("click", checkAnswer);
+        nextBtn.addEventListener("click", setNewColor);
+        hintBtn.addEventListener("click", showHint);
+        colorInput.addEventListener("keypress", function(e) {
+          if (e.key === "Enter") {
+            checkAnswer();
+          }
+        });
+        
+        // Reset game state
+        currentColorIndex = 0;
+        score = 0;
+        hintsUsed = 0;
+        totalQuestionsAnswered = 0;
+        
+        // Start the first color
+        setNewColor();
+      }
+      
+      function showHint() {
+        const hintText = document.getElementById("hint-text");
+        const hintBtn = document.getElementById("hint-btn");
+        const hintCounter = document.getElementById("hint-counter");
+        
+        // Show hint text with animation
+        hintText.textContent = colorHints[currentColor] || "No hint available for this color";
+        hintText.classList.add("show");
+        
+        // Update hint counter
+        hintsUsed++;
+        hintCounter.textContent = hintsUsed;
+        hintCounter.style.display = "flex";
+        
+        // Add a small animation effect to the hint button
+        hintBtn.style.animation = "pulse 0.5s";
+        setTimeout(() => {
+          hintBtn.style.animation = "";
+        }, 500);
+      }
+      
+      function setNewColor() {
+        // Get DOM elements
+        const colorBox = document.getElementById("color-box");
+        const colorInput = document.getElementById("color-input");
+        const submitBtn = document.getElementById("submit-btn");
+        const nextBtn = document.getElementById("next-btn");
+        const feedback = document.getElementById("feedback");
+        const attemptsDisplay = document.getElementById("attempts");
+        const celebration = document.getElementById("celebration");
+        const hintText = document.getElementById("hint-text");
+        
+        // Check if game is complete
+        if (currentColorIndex >= colors.length) {
+          showFinalResults();
+          return;
+        }
+        
+        currentColor = colors[currentColorIndex];
+        colorBox.style.backgroundColor = currentColor;
+        attempts = 3;
+        attemptsDisplay.textContent = `Attempts left: ${attempts}`;
+        feedback.textContent = "";
+        colorInput.value = "";
+        hintText.textContent = "";
+        hintText.classList.remove("show");
+        celebration.style.display = "none";
+        nextBtn.style.display = "none";
+        submitBtn.style.display = "inline-block";
+        
+        // Update score display
+        document.getElementById("score-display").textContent = `Score: ${score}`;
+        
+        // Set focus to input field for better UX
+        setTimeout(() => {
+          colorInput.focus();
+        }, 100);
+      }
+      
+      function checkAnswer() {
+        // Get DOM elements
+        const colorInput = document.getElementById("color-input");
+        const submitBtn = document.getElementById("submit-btn");
+        const nextBtn = document.getElementById("next-btn");
+        const feedback = document.getElementById("feedback");
+        const attemptsDisplay = document.getElementById("attempts");
+        const celebration = document.getElementById("celebration");
+        
+        let userGuess = colorInput.value.trim().toLowerCase();
+        
+        if (userGuess === currentColor) {
+          feedback.textContent = "Correct! 🎉";
+          feedback.style.color = "green";
+          celebration.style.display = "block";
+          nextBtn.style.display = "inline-block";
+          submitBtn.style.display = "none";
+          
+          // Increment score and color index
+          score++;
+          currentColorIndex++;
+          totalQuestionsAnswered++;
+          
+          // Update score display
+          document.getElementById("score-display").textContent = `Score: ${score}`;
+        } else {
+          attempts--;
+          if (attempts > 0) {
+            feedback.textContent = `Wrong! Try again.`;
+            feedback.style.color = "red";
+            colorInput.value = ""; // Clear the input field
+            colorInput.focus(); // Refocus input field
+          } else {
+            feedback.textContent = `Out of attempts! The color was ${currentColor}.`;
+            feedback.style.color = "red";
+            nextBtn.style.display = "inline-block";
+            submitBtn.style.display = "none";
+            
+            // Reset score on wrong answer
+            score = 0;
+            currentColorIndex++;
+            totalQuestionsAnswered++;
+            
+            // Update score display
+            document.getElementById("score-display").textContent = `Score: ${score}`;
+          }
+        }
+        
+        attemptsDisplay.textContent = `Attempts left: ${attempts}`;
+      }
+      
+      function showFinalResults() {
+        const totalPossibleScore = colors.length;
+        const finalScore = score;
+        const hintPenalty = hintsUsed * 0.5; // Each hint reduces score by 0.5
+        const adjustedScore = Math.max(0, finalScore - hintPenalty);
+        
+        container.innerHTML = `
+          <h1>Game Complete!</h1>
+          <div class="final-results">
+            <p>You completed all the colors!</p>
+            <p>Raw Score: ${finalScore}</p>
+            <p>Hints Used: ${hintsUsed} (-${hintPenalty} points)</p>
+            <p>Final Adjusted Score: ${adjustedScore.toFixed(1)}</p>
+            <p>Success Rate: ${Math.round((finalScore/totalPossibleScore) * 100)}%</p>
+            <button id="play-again-btn">Play Again</button>
+          </div>
+          <div id="celebration" style="display: block; font-size: clamp(2rem, 6vw, 3rem); margin: 20px 0;">🎉🏆✨</div>
+        `;
+        
+        document.getElementById("play-again-btn").addEventListener("click", showInstructions);
+      }
+      
+      // Add keyframe animation for the hint button
+      const style = document.createElement('style');
+      style.textContent = `
+        @keyframes pulse {
+          0% { transform: scale(1); }
+          50% { transform: scale(1.1); }
+          100% { transform: scale(1); }
+        }
+      `;
+      document.head.appendChild(style);
+      
+      // Handle viewport changes
+      function handleResize() {
+        const vh = window.innerHeight * 0.01;
+        document.documentElement.style.setProperty('--vh', `${vh}px`);
+      }
+
+      // Listen for resize events
+      window.addEventListener('resize', handleResize);
+      handleResize(); // Initial call
+      
+      // Start with instructions
+      showInstructions();
+    });
+  </script>
+</body>
+</html>

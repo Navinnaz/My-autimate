@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inside Out Emotion Matcher</title>
+    <style>
+        :root {
+            --joy-color: #FFDA58;
+            --sadness-color: #4A97D9;
+            --anger-color: #E4312B;
+            --fear-color: #BB9CDE;
+            --disgust-color: #83C663;
+            --embarrassment-color: #FF9AA2;
+            --anxiety-color: #8FBFE0;
+            --cool-color: #6ABFC6;
+            --envy-color: #A0D995;
+            --primary-dark: #2D3047;
+            --primary-light: #F0F4F8;
+            --secondary: #5A67D8;
+            --background: #F8F9FA;
+            --card-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--background);
+            color: var(--primary-dark);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background-color: white;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 800px;
+            padding: 30px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, 
+                var(--joy-color), 
+                var(--sadness-color), 
+                var(--anger-color), 
+                var(--fear-color), 
+                var(--disgust-color),
+                var(--embarrassment-color),
+                var(--anxiety-color),
+                var(--cool-color),
+                var(--envy-color)
+            );
+        }
+        
+        h1 {
+            color: var(--primary-dark);
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 2.2rem;
+        }
+        
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1.8rem;
+            }
+        }
+        
+        .game-description {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #555;
+            font-size: 1.1rem;
+        }
+        
+        .emotion-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 30px 0;
+        }
+        
+        .emotion-image {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 15px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+            border: 5px solid var(--primary-dark);
+            animation: pulse 2s infinite;
+        }
+        
+        @media (max-width: 600px) {
+            .emotion-image {
+                width: 150px;
+                height: 150px;
+            }
+        }
+        
+        .emotion-display {
+            font-size: 2rem;
+            padding: 15px 30px;
+            border-radius: 12px;
+            text-align: center;
+            font-weight: bold;
+            color: white;
+            background-color: var(--primary-dark);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        @media (max-width: 600px) {
+            .emotion-display {
+                font-size: 1.5rem;
+                padding: 12px 20px;
+            }
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+            100% { transform: scale(1); }
+        }
+        
+        .characters-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        @media (max-width: 768px) {
+            .characters-container {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 15px;
+            }
+        }
+        
+        @media (max-width: 600px) {
+            .characters-container {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+        }
+        
+        @media (max-width: 400px) {
+            .characters-container {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
+            }
+        }
+        
+        .character {
+            cursor: pointer;
+            text-align: center;
+            padding: 15px;
+            border-radius: 12px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        @media (max-width: 600px) {
+            .character {
+                padding: 10px;
+            }
+        }
+        
+        .character:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .character img {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid white;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            margin-bottom: 10px;
+            transition: transform 0.3s;
+        }
+        
+        @media (max-width: 768px) {
+            .character img {
+                width: 60px;
+                height: 60px;
+            }
+        }
+        
+        @media (max-width: 600px) {
+            .character img {
+                width: 50px;
+                height: 50px;
+                border-width: 3px;
+            }
+        }
+        
+        .character:hover img {
+            transform: scale(1.1);
+        }
+        
+        .character p {
+            margin-top: 5px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: white;
+        }
+        
+        @media (max-width: 600px) {
+            .character p {
+                font-size: 0.9rem;
+            }
+        }
+        
+        .joy { background-color: var(--joy-color); }
+        .sadness { background-color: var(--sadness-color); }
+        .anger { background-color: var(--anger-color); }
+        .fear { background-color: var(--fear-color); }
+        .disgust { background-color: var(--disgust-color); }
+        .embarrassment { background-color: var(--embarrassment-color); }
+        .anxiety { background-color: var(--anxiety-color); }
+        .cool { background-color: var(--cool-color); }
+        .envy { background-color: var(--envy-color); }
+        
+        .feedback {
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+        
+        @media (max-width: 600px) {
+            .feedback {
+                font-size: 0.95rem;
+                padding: 15px;
+            }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .correct {
+            background-color: rgba(131, 198, 99, 0.2);
+            color: #2a672a;
+            border-left: 5px solid #4CAF50;
+        }
+        
+        .incorrect {
+            background-color: rgba(228, 49, 43, 0.1);
+            color: #b02a26;
+            border-left: 5px solid #E4312B;
+        }
+        
+        .game-stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 20px 0;
+        }
+        
+        .score {
+            font-size: 1.2rem;
+            font-weight: bold;
+            background-color: var(--primary-dark);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+        }
+        
+        @media (max-width: 600px) {
+            .score {
+                font-size: 1rem;
+                padding: 6px 12px;
+            }
+        }
+        
+        .progress-container {
+            flex-grow: 1;
+            margin: 0 20px;
+        }
+        
+        .progress {
+            height: 8px;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--secondary), var(--joy-color));
+            border-radius: 4px;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: var(--secondary);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(90, 103, 216, 0.3);
+            margin: 10px auto;
+            display: none;
+        }
+        
+        @media (max-width: 600px) {
+            .btn {
+                padding: 10px 20px;
+                font-size: 0.9rem;
+            }
+        }
+        
+        .btn:hover {
+            background-color: #4754c6;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(90, 103, 216, 0.4);
+        }
+        
+        .results {
+            text-align: center;
+            animation: fadeIn 1s;
+        }
+        
+        .results h2 {
+            color: var(--secondary);
+            margin-bottom: 20px;
+        }
+        
+        .results p {
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+        
+        @media (max-width: 600px) {
+            .results p {
+                font-size: 1rem;
+            }
+        }
+        
+        .results .score-highlight {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--secondary);
+            margin: 20px 0;
+            display: block;
+        }
+        
+        @media (max-width: 600px) {
+            .results .score-highlight {
+                font-size: 1.6rem;
+            }
+        }
+        
+        .emoji-animation {
+            font-size: 3rem;
+            margin: 20px 0;
+            animation: bounce 1s infinite alternate;
+        }
+        
+        @media (max-width: 600px) {
+            .emoji-animation {
+                font-size: 2.5rem;
+            }
+        }
+        
+        @keyframes bounce {
+            from { transform: translateY(0); }
+            to { transform: translateY(-10px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Inside Out Emotion Matcher</h1>
+        <p class="game-description">Match the displayed emotion with the correct Inside Out character. Can you identify all the emotions correctly?</p>
+        
+        <div class="game-stats">
+            <div class="score">Score: <span id="score">0</span> / <span id="total">0</span></div>
+            <div class="progress-container">
+                <div class="progress">
+                    <div class="progress-bar" id="progress-bar"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="emotion-container">
+            <img id="emotion-image" class="emotion-image" src="/api/placeholder/180/180" alt="Emotion Image">
+            <div class="emotion-display" id="emotion-display">
+                <!-- Emotion will be displayed here -->
+            </div>
+        </div>
+        
+        <div class="characters-container">
+            <div class="character joy" onclick="checkAnswer('Joy')">
+                <img src="/api/placeholder/70/70" alt="Joy">
+                <p>Joy</p>
+            </div>
+            <div class="character sadness" onclick="checkAnswer('Sadness')">
+                <img src="/api/placeholder/70/70" alt="Sadness">
+                <p>Sadness</p>
+            </div>
+            <div class="character anger" onclick="checkAnswer('Anger')">
+                <img src="/api/placeholder/70/70" alt="Anger">
+                <p>Anger</p>
+            </div>
+            <div class="character fear" onclick="checkAnswer('Fear')">
+                <img src="/api/placeholder/70/70" alt="Fear">
+                <p>Fear</p>
+            </div>
+            <div class="character disgust" onclick="checkAnswer('Disgust')">
+                <img src="/api/placeholder/70/70" alt="Disgust">
+                <p>Disgust</p>
+            </div>
+            <div class="character embarrassment" onclick="checkAnswer('Embarrassment')">
+                <img src="/api/placeholder/70/70" alt="Embarrassment">
+                <p>Embarrassment</p>
+            </div>
+            <div class="character anxiety" onclick="checkAnswer('Anxiety')">
+                <img src="/api/placeholder/70/70" alt="Anxiety">
+                <p>Anxiety</p>
+            </div>
+            <div class="character cool" onclick="checkAnswer('Cool')">
+                <img src="/api/placeholder/70/70" alt="Cool">
+                <p>Cool</p>
+            </div>
+            <div class="character envy" onclick="checkAnswer('Envy')">
+                <img src="/api/placeholder/70/70" alt="Envy">
+                <p>Envy</p>
+            </div>
+        </div>
+        
+        <div class="feedback" id="feedback">
+            <!-- Feedback will be inserted here -->
+        </div>
+        
+        <button class="btn" id="next-btn" onclick="nextEmotion()">Next Emotion</button>
+    </div>
+    
+    <script>
+        // Game variables
+        let currentEmotionIndex = 0;
+        let score = 0;
+        let emotions = [
+            {
+                prompt: "HAPPINESS",
+                answer: "Joy",
+                explanation: "Happiness is the primary emotion Joy represents - feelings of pleasure, satisfaction, and well-being.",
+                imageUrl: "/api/placeholder/180/180?text=Happiness"
+            },
+            {
+                prompt: "MELANCHOLY",
+                answer: "Sadness",
+                explanation: "Melancholy is a form of sadness characterized by feeling pensive or thoughtful about what you've lost.",
+                imageUrl: "/api/placeholder/180/180?text=Melancholy"
+            },
+            {
+                prompt: "RAGE",
+                answer: "Anger",
+                explanation: "Rage is an intense form of anger, characterized by extreme emotion and sometimes loss of control.",
+                imageUrl: "/api/placeholder/180/180?text=Rage"
+            },
+            {
+                prompt: "TERROR",
+                answer: "Fear",
+                explanation: "Terror is an extreme form of fear that can be overwhelming and paralyzing.",
+                imageUrl: "/api/placeholder/180/180?text=Terror"
+            },
+            {
+                prompt: "REVULSION",
+                answer: "Disgust",
+                explanation: "Revulsion is a strong feeling of disgust, often involving a desire to avoid or reject something.",
+                imageUrl: "/api/placeholder/180/180?text=Revulsion"
+            },
+            {
+                prompt: "MORTIFICATION",
+                answer: "Embarrassment",
+                explanation: "Mortification is extreme embarrassment, often involving social discomfort and self-consciousness.",
+                imageUrl: "/api/placeholder/180/180?text=Mortification"
+            },
+            {
+                prompt: "WORRY",
+                answer: "Anxiety",
+                explanation: "Worry is a form of anxiety focused on potential problems or concerns about the future.",
+                imageUrl: "/api/placeholder/180/180?text=Worry"
+            },
+            {
+                prompt: "CONFIDENCE",
+                answer: "Cool",
+                explanation: "Confidence is feeling sure of yourself and your abilities, a key aspect of being 'cool'.",
+                imageUrl: "/api/placeholder/180/180?text=Confidence"
+            },
+            {
+                prompt: "JEALOUSY",
+                answer: "Envy",
+                explanation: "Jealousy is related to envy - feeling resentful of someone else's advantages or possessions.",
+                imageUrl: "/api/placeholder/180/180?text=Jealousy"
+            },
+            {
+                prompt: "DELIGHT",
+                answer: "Joy",
+                explanation: "Delight is a high degree of pleasure or joy, often caused by something wonderful or surprising.",
+                imageUrl: "/api/placeholder/180/180?text=Delight"
+            },
+            {
+                prompt: "GRIEF",
+                answer: "Sadness",
+                explanation: "Grief is deep sadness, usually in response to loss or death.",
+                imageUrl: "/api/placeholder/180/180?text=Grief"
+            },
+            {
+                prompt: "FRUSTRATION",
+                answer: "Anger",
+                explanation: "Frustration is a form of anger that arises when you're prevented from achieving a goal.",
+                imageUrl: "/api/placeholder/180/180?text=Frustration"
+            },
+            {
+                prompt: "NERVOUSNESS",
+                answer: "Anxiety",
+                explanation: "Nervousness is a mild form of anxiety, often experienced before important events.",
+                imageUrl: "/api/placeholder/180/180?text=Nervousness"
+            },
+            {
+                prompt: "PANIC",
+                answer: "Fear",
+                explanation: "Panic is a sudden, intense fear that can lead to irrational thoughts and behaviors.",
+                imageUrl: "/api/placeholder/180/180?text=Panic"
+            },
+            {
+                prompt: "AVERSION",
+                answer: "Disgust",
+                explanation: "Aversion is a strong feeling of dislike or disgust, causing you to avoid something.",
+                imageUrl: "/api/placeholder/180/180?text=Aversion"
+            },
+            {
+                prompt: "SELF-CONSCIOUS",
+                answer: "Embarrassment",
+                explanation: "Being self-conscious is a form of embarrassment where you're excessively aware of yourself and how others perceive you.",
+                imageUrl: "/api/placeholder/180/180?text=Self-Conscious"
+            },
+            {
+                prompt: "COMPOSED",
+                answer: "Cool",
+                explanation: "Being composed means staying calm and in control, a key aspect of appearing 'cool'.",
+                imageUrl: "/api/placeholder/180/180?text=Composed"
+            },
+            {
+                prompt: "RESENTMENT",
+                answer: "Envy",
+                explanation: "Resentment is bitter indignation about something, often related to envy of others' success or advantages.",
+                imageUrl: "/api/placeholder/180/180?text=Resentment"
+            }
+        ];
+        
+        // Mapping the emotions to Inside Out characters
+        const emotionMapping = {
+            'Joy': 'Joy',
+            'Sadness': 'Sadness',
+            'Anger': 'Anger',
+            'Fear': 'Fear',
+            'Disgust': 'Disgust',
+            'Embarrassment': 'Embarrassment',
+            'Anxiety': 'Anxiety',
+            'Cool': 'Cool',
+            'Envy': 'Envy'
+        };
+        
+        // Initialize the game
+        function initGame() {
+            document.getElementById("total").textContent = emotions.length;
+            shuffleEmotions();
+            showEmotion();
+        }
+        
+        // Shuffle the emotions for variety
+        function shuffleEmotions() {
+            emotions.sort(() => Math.random() - 0.5);
+        }
+        
+        // Display current emotion
+        function showEmotion() {
+            const emotion = emotions[currentEmotionIndex];
+            document.getElementById("emotion-display").textContent = emotion.prompt;
+            document.getElementById("emotion-image").src = emotion.imageUrl;
+            document.getElementById("emotion-image").alt = emotion.prompt;
+            
+            // Update progress bar
+            const progressPercentage = (currentEmotionIndex / emotions.length) * 100;
+            document.getElementById("progress-bar").style.width = progressPercentage + "%";
+            
+            // Hide feedback and next button
+            document.getElementById("feedback").style.display = "none";
+            document.getElementById("next-btn").style.display = "none";
+            
+            // Enable all character options
+            const characters = document.getElementsByClassName("character");
+            for (let i = 0; i < characters.length; i++) {
+                characters[i].style.opacity = "1";
+                characters[i].style.pointerEvents = "auto";
+            }
+        }
+        
+        // Check if the answer is correct
+        function checkAnswer(selectedEmotion) {
+            const emotion = emotions[currentEmotionIndex];
+            const feedbackElement = document.getElementById("feedback");
+            
+            // Disable all character options
+            const characters = document.getElementsByClassName("character");
+            for (let i = 0; i < characters.length; i++) {
+                characters[i].style.opacity = "0.5";
+                characters[i].style.pointerEvents = "none";
+            }
+            
+            // Highlight the selected character
+            const selectedCharacter = document.querySelector(`.${selectedEmotion.toLowerCase()}`);
+            if (selectedCharacter) {
+                selectedCharacter.style.opacity = "1";
+            }
+            
+            // Highlight the correct character if the answer is wrong
+            if (selectedEmotion !== emotion.answer) {
+                const correctCharacter = document.querySelector(`.${emotion.answer.toLowerCase()}`);
+                if (correctCharacter) {
+                    correctCharacter.style.opacity = "1";
+                }
+            }
+            
+            // Check if the answer is correct
+            if (selectedEmotion === emotion.answer) {
+                feedbackElement.className = "feedback correct";
+                feedbackElement.innerHTML = `<strong>✓ Correct!</strong> ${emotion.explanation}`;
+                score++;
+                document.getElementById("score").textContent = score;
+            } else {
+                feedbackElement.className = "feedback incorrect";
+                feedbackElement.innerHTML = `<strong>✗ Not quite.</strong> "${emotion.prompt}" is associated with ${emotion.answer}. ${emotion.explanation}`;
+            }
+            
+            // Show feedback and next button
+            feedbackElement.style.display = "block";
+            
+            if (currentEmotionIndex < emotions.length - 1) {
+                document.getElementById("next-btn").style.display = "block";
+            } else {
+                // Game is over
+                document.getElementById("next-btn").textContent = "See Results";
+                document.getElementById("next-btn").style.display = "block";
+                document.getElementById("next-btn").onclick = showResults;
+            }
+        }
+        
+        // Move to the next emotion
+        function nextEmotion() {
+            currentEmotionIndex++;
+            showEmotion();
+        }
+        
+        // Show final results
+        function showResults() {
+            const totalEmotions = emotions.length;
+            const finalScore = score;
+            const percentage = Math.round((finalScore / totalEmotions) * 100);
+            
+            let message = "";
+            let emoji = "";
+            
+            if (percentage >= 90) {
+                message = "Amazing! You're an emotion expert!";
+                emoji = "🏆";
+            } else if (percentage >= 70) {
+                message = "Great job! You have good emotional intelligence!";
+                emoji = "🌟";
+            } else if (percentage >= 50) {
+                message = "Good effort! Keep practicing to improve your emotional awareness.";
+                emoji = "👍";
+            } else {
+                message = "Keep practicing! Understanding emotions takes time.";
+                emoji = "🔄";
+            }
+            
+            // Hide characters and show results
+            document.querySelector(".characters-container").style.display = "none";
+            document.querySelector(".emotion-container").style.display = "none";
+            document.getElementById("feedback").style.display = "none";
+            
+            // Create results div
+            const resultsDiv = document.createElement("div");
+            resultsDiv.className = "results";
+            resultsDiv.innerHTML = `
+                <h2>Game Complete!</h2>
+                <div class="emoji-animation">${emoji}</div>
+                <span class="score-highlight">${finalScore} out of ${totalEmotions} (${percentage}%)</span>
+                <p>${message}</p>
+                <p>Understanding different emotions and their relationships is a key part of emotional intelligence.</p>
+            `;
+            
+            // Insert results before next button
+            document.getElementById("next-btn").parentNode.insertBefore(resultsDiv, document.getElementById("next-btn"));
+            
+            // Change next button to play again
+            document.getElementById("next-btn").textContent = "Play Again";
+            document.getElementById("next-btn").onclick = resetGame;
+            document.getElementById("next-btn").style.display = "block";
+        }
+        
+        // Reset the game
+        function resetGame() {
+            // Remove results div if it exists
+            const resultsDiv = document.querySelector(".results");
+            if (resultsDiv) {
+                resultsDiv.remove();
+            }
+            
+            // Show characters and emotion display again
+            document.querySelector(".characters-container").style.display = "grid";
+            document.querySelector(".emotion-container").style.display = "flex";
+            
+            // Reset game variables
+            currentEmotionIndex = 0;
+            score = 0;
+            document.getElementById("score").textContent = "0";
+            
+            // Shuffle emotions for variety
+            shuffleEmotions();
+            
+            // Reset next button
+            document.getElementById("next-btn").textContent = "Next Emotion";
+            document.getElementById("next-btn").onclick = nextEmotion;
+            
+            showEmotion();
+        }
+        
+        // Start the game when page loads
+        window.onload = function() {
+            initGame();
+        };
+    </script>
+</body>
+</html>

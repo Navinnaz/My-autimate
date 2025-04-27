@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Whack-a-Hamster Game</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #3a1c71, #d76d77, #ffaf7b);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            color: white;
+            overflow: hidden;
+        }
+        .game-container {
+            position: relative;
+            width: 640px;
+            height: 540px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 24px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+        .game-title {
+            font-size: 40px;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
+            color: #fffdcf;
+        }
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            font-size: 24px;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 10px 20px;
+            border-radius: 15px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 20px;
+            justify-content: center;
+            align-items: center;
+            height: 400px;
+        }
+        .hole {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(to bottom, #764ba2, #667eea);
+            border-radius: 20px;
+            position: relative;
+            cursor: pointer;
+            box-shadow: inset 0 -10px 15px rgba(0, 0, 0, 0.3), 0 4px 10px rgba(0, 0, 0, 0.3);
+            transition: transform 0.2s;
+            margin: 0 auto;
+            overflow: hidden;
+            border: 3px solid rgba(255, 255, 255, 0.2);
+        }
+        .hole:hover {
+            transform: scale(1.05);
+        }
+        .hamster {
+            position: absolute;
+            bottom: -100%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 80px;
+            transition: bottom 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .hamster.active {
+            bottom: 10px;
+        }
+        .hamster-face {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(145deg, #ffb347, #ffcc33);
+            border-radius: 50%;
+            position: relative;
+            overflow: visible;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            transition: all 0.2s;
+        }
+        .hamster-ears {
+            position: absolute;
+            top: -12px;
+            width: 100%;
+            z-index: -1;
+        }
+        .hamster-ear {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: #ffb347;
+            border-radius: 50% 50% 0 0;
+        }
+        .hamster-ear.left {
+            left: 10px;
+            transform: rotate(-30deg);
+        }
+        .hamster-ear.right {
+            right: 10px;
+            transform: rotate(30deg);
+        }
+        .hamster-eye {
+            position: absolute;
+            width: 12px;
+            height: 15px;
+            background: black;
+            border-radius: 50%;
+            top: 20px;
+            animation: blink 4s infinite;
+        }
+        @keyframes blink {
+            0%, 96%, 98% {transform: scaleY(1);}
+            97%, 99% {transform: scaleY(0.1);}
+        }
+        .hamster-eye.left {
+            left: 17px;
+        }
+        .hamster-eye.right {
+            right: 17px;
+        }
+        .hamster-eye::after {
+            content: '';
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+        }
+        .hamster-nose {
+            position: absolute;
+            width: 14px;
+            height: 8px;
+            background: #ff7979;
+            border-radius: 50%;
+            top: 35px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        .hamster-cheeks {
+            position: absolute;
+            width: 18px;
+            height: 12px;
+            background: #ffcccc;
+            border-radius: 50%;
+            top: 38px;
+        }
+        .hamster-cheeks.left {
+            left: 8px;
+        }
+        .hamster-cheeks.right {
+            right: 8px;
+        }
+        .hamster-mouth {
+            position: absolute;
+            width: 12px;
+            height: 7px;
+            border-bottom: 2px solid #7f8c8d;
+            border-radius: 0 0 50% 50%;
+            top: 45px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        .hamster.whacked .hamster-face {
+            transform: scale(0.9);
+            background: linear-gradient(145deg, #ffa347, #ffbb33);
+        }
+        .hamster.whacked .hamster-eye.left {
+            transform: rotate(20deg) scaleY(0.5);
+        }
+        .hamster.whacked .hamster-eye.right {
+            transform: rotate(-20deg) scaleY(0.5);
+        }
+        .hamster.whacked .hamster-mouth {
+            width: 15px;
+            height: 10px;
+            border: none;
+            background: #7f8c8d;
+            border-radius: 0 0 50% 50%;
+        }
+        .start-screen, .end-screen, .rules-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            border-radius: 24px;
+            z-index: 10;
+        }
+        .rules-screen {
+            padding: 30px;
+            box-sizing: border-box;
+        }
+        .rules-title {
+            font-size: 32px;
+            margin-bottom: 20px;
+            color: #fffdcf;
+        }
+        .rules-list {
+            text-align: left;
+            margin-bottom: 20px;
+            font-size: 18px;
+            line-height: 1.5;
+        }
+        .rules-list li {
+            margin-bottom: 10px;
+        }
+        .end-screen {
+            display: none;
+        }
+        .start-btn, .play-again-btn, .rules-btn {
+            background: linear-gradient(to right, #fc466b, #3f5efb);
+            border: none;
+            padding: 12px 30px;
+            font-size: 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        .start-btn:hover, .play-again-btn:hover, .rules-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 20px rgba(0, 0, 0, 0.3);
+        }
+        .start-btn:active, .play-again-btn:active, .rules-btn:active {
+            transform: translateY(1px);
+        }
+        .rules-btn {
+            background: linear-gradient(to right, #3f5efb, #fc466b);
+            margin-top: 10px;
+        }
+        .final-score {
+            font-size: 40px;
+            color: #fffdcf;
+            margin: 20px 0;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #f00;
+            opacity: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1 class="game-title">🐹 Whack-a-Hamster 🐹</h1>
+        <div class="stats">
+            <div>Score: <span id="score">0</span></div>
+            <div>Time: <span id="timer">30</span>s</div>
+        </div>
+        <div class="grid">
+            <div class="hole" data-hole="1">
+                <div class="hamster">
+                    <div class="hamster-face">
+                        <div class="hamster-ears">
+                            <div class="hamster-ear left"></div>
+                            <div class="hamster-ear right"></div>
+                        </div>
+                        <div class="hamster-eye left"></div>
+                        <div class="hamster-eye right"></div>
+                        <div class="hamster-cheeks left"></div>
+                        <div class="hamster-cheeks right"></div>
+                        <div class="hamster-nose"></div>
+                        <div class="hamster-mouth"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="hole" data-hole="2">
+                <div class="hamster">
+                    <div class="hamster-face">
+                        <div class="hamster-ears">
+                            <div class="hamster-ear left"></div>
+                            <div class="hamster-ear right"></div>
+                        </div>
+                        <div class="hamster-eye left"></div>
+                        <div class="hamster-eye right"></div>
+                        <div class="hamster-cheeks left"></div>
+                        <div class="hamster-cheeks right"></div>
+                        <div class="hamster-nose"></div>
+                        <div class="hamster-mouth"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="hole" data-hole="3">
+                <div class="hamster">
+                    <div class="hamster-face">
+                        <div class="hamster-ears">
+                            <div class="hamster-ear left"></div>
+                            <div class="hamster-ear right"></div>
+                        </div>
+                        <div class="hamster-eye left"></div>
+                        <div class="hamster-eye right"></div>
+                        <div class="hamster-cheeks left"></div>
+                        <div class="hamster-cheeks right"></div>
+                        <div class="hamster-nose"></div>
+                        <div class="hamster-mouth"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="hole" data-hole="4">
+                <div class="hamster">
+                    <div class="hamster-face">
+                        <div class="hamster-ears">
+                            <div class="hamster-ear left"></div>
+                            <div class="hamster-ear right"></div>
+                        </div>
+                        <div class="hamster-eye left"></div>
+                        <div class="hamster-eye right"></div>
+                        <div class="hamster-cheeks left"></div>
+                        <div class="hamster-cheeks right"></div>
+                        <div class="hamster-nose"></div>
+                        <div class="hamster-mouth"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="rules-screen">
+            <h2 class="rules-title">🐹 How to Play 🐹</h2>
+            <ul class="rules-list">
+                <li><strong>Goal:</strong> Whack as many hamsters as you can in 30 seconds!</li>
+                <li><strong>Controls:</strong> Click on a hamster when it pops up from a hole.</li>
+                <li><strong>Points:</strong> You get 1 point for each hamster you successfully whack.</li>
+                <li><strong>Difficulty:</strong> The game gets faster as your score increases.</li>
+                <li><strong>Tip:</strong> Watch all holes carefully — those hamsters are sneaky!</li>
+            </ul>
+            <button class="start-btn">START GAME</button>
+        </div>
+        <div class="end-screen">
+            <h2 class="game-over">Game Over!</h2>
+            <div class="final-score">Score: <span id="final-score">0</span></div>
+            <button class="play-again-btn">PLAY AGAIN</button>
+        </div>
+    </div>
+
+    <script>
+        const holes = document.querySelectorAll('.hole');
+        const hamsters = document.querySelectorAll('.hamster');
+        const scoreElement = document.getElementById('score');
+        const timerElement = document.getElementById('timer');
+        const startBtn = document.querySelector('.start-btn');
+        const playAgainBtn = document.querySelector('.play-again-btn');
+        const rulesScreen = document.querySelector('.rules-screen');
+        const endScreen = document.querySelector('.end-screen');
+        const finalScoreElement = document.getElementById('final-score');
+
+        let score = 0;
+        let timeLeft = 30;
+        let gameInterval;
+        let timerInterval;
+        let lastHole;
+        let gameSpeed = 1000; // Initial speed
+
+        function startGame() {
+            score = 0;
+            timeLeft = 30;
+            gameSpeed = 1000;
+            scoreElement.textContent = score;
+            timerElement.textContent = timeLeft;
+            rulesScreen.style.display = 'none';
+            endScreen.style.display = 'none';
+
+            // Clear any existing confetti
+            const confetti = document.querySelectorAll('.confetti');
+            confetti.forEach(c => c.remove());
+
+            // Reset any active hamsters
+            hamsters.forEach(hamster => {
+                hamster.classList.remove('active');
+                hamster.classList.remove('whacked');
+            });
+
+            gameInterval = setInterval(peep, gameSpeed);
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                timerElement.textContent = timeLeft;
+                if (timeLeft <= 0) {
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        function randomHole(holes) {
+            const index = Math.floor(Math.random() * holes.length);
+            const hole = holes[index];
+           
+            // Avoid choosing the same hole twice in a row
+            if (hole === lastHole) {
+                return randomHole(holes);
+            }
+           
+            lastHole = hole;
+            return hole;
+        }
+
+        function peep() {
+            const hole = randomHole(holes);
+            const hamster = hole.querySelector('.hamster');
+           
+            hamster.classList.add('active');
+
+            // Calculate stay-up time based on score
+            let stayUpTime = Math.max(300, 1200 - (score * 10));
+            if (stayUpTime < 300) stayUpTime = 300; // Minimum time
+
+            setTimeout(() => {
+                hamster.classList.remove('active');
+                hamster.classList.remove('whacked');
+                // Only check if the game is still running
+                if (timeLeft > 0) {
+                    // Randomly decide if we should immediately peep again
+                    if (Math.random() > 0.5) {
+                        peep();
+                    }
+                }
+            }, stayUpTime);
+        }
+
+        function whack(e) {
+            if (!e.isTrusted) return; // Cheater!
+           
+            const hamster = this.querySelector('.hamster');
+            if (hamster.classList.contains('active') && !hamster.classList.contains('whacked')) {
+                score++;
+                scoreElement.textContent = score;
+                hamster.classList.add('whacked');
+               
+                // Increase game speed with score
+                if (score % 5 === 0 && gameSpeed > 400) {
+                    clearInterval(gameInterval);
+                    gameSpeed -= 50;
+                    gameInterval = setInterval(peep, gameSpeed);
+                }
+               
+                // Add some randomness to the game difficulty as score increases
+                if (score > 10 && Math.random() > 0.7) {
+                    setTimeout(peep, 300); // Spawn a new hamster quickly
+                }
+            }
+        }
+
+        function createConfetti() {
+            const confettiCount = 150;
+            const colors = ['#f94144', '#f3722c', '#f8961e', '#f9c74f', '#90be6d', '#43aa8b', '#577590', '#277da1'];
+           
+            // Create confetti container
+            const gameContainer = document.querySelector('.game-container');
+           
+            for (let i = 0; i < confettiCount; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+               
+                // Random properties
+                const size = Math.random() * 10 + 5;
+                const colorIdx = Math.floor(Math.random() * colors.length);
+               
+                confetti.style.width = `${size}px`;
+                confetti.style.height = `${size}px`;
+                confetti.style.backgroundColor = colors[colorIdx];
+               
+                // Random starting position at the top
+                confetti.style.left = `${Math.random() * 100}%`;
+                confetti.style.top = `${Math.random() * 20 - 20}%`;
+                confetti.style.opacity = '1';
+               
+                // Shape variation
+                if (Math.random() > 0.6) {
+                    confetti.style.borderRadius = '50%';
+                }
+               
+                gameContainer.appendChild(confetti);
+               
+                // Animate confetti
+                const animationDuration = Math.random() * 3 + 2;
+                const fallDistance = Math.random() * 100 + 20;
+                const swayAmount = Math.random() * 50 - 25;
+               
+                confetti.animate([
+                    { transform: 'translate(0, 0) rotate(0deg)', opacity: 1 },
+                    { transform: `translate(${swayAmount}px, ${fallDistance}%) rotate(${Math.random() * 360}deg)`, opacity: 0.7 },
+                    { transform: `translate(${swayAmount * -1.5}px, ${fallDistance * 2}%) rotate(${Math.random() * 720}deg)`, opacity: 0 }
+                ], {
+                    duration: animationDuration * 1000,
+                    easing: 'cubic-bezier(0.215, 0.61, 0.355, 1)',
+                    fill: 'forwards'
+                });
+               
+                // Remove confetti after animation
+                setTimeout(() => {
+                    confetti.remove();
+                }, animationDuration * 1000);
+            }
+        }
+
+        function endGame() {
+            clearInterval(gameInterval);
+            clearInterval(timerInterval);
+            finalScoreElement.textContent = score;
+            endScreen.style.display = 'flex';
+            createConfetti();
+        }
+
+        holes.forEach(hole => {
+            hole.addEventListener('click', whack);
+        });
+
+        startBtn.addEventListener('click', startGame);
+        playAgainBtn.addEventListener('click', startGame);
+    </script>
+</body>
+</html>
