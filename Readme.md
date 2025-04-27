@@ -5,7 +5,7 @@ A Comprehensive Support System for Individuals with Autism
 ---
 
 ## 📌 Problem Statement
-Problem Statement 7 – Transform the Future of Rural Commerce
+Problem statement 1 - Weave AI magic with Groq
 
 ---
 
@@ -16,12 +16,13 @@ AUTIMATE solves the critical challenges faced by individuals with Autism Spectru
 
 ## 🧠 Team & Approach
 
-**Team Name:** AUTIMATE Innovators
+**Team Name:** MP4
 
 **Team Members:**
-- Name 1 (GitHub / LinkedIn / Role)
-- Name 2
-- Name 3
+- Navin Nazerine - Tech Lead and AI engineer 
+- Mohammed Faaz - Fullstack Web Developer
+- Rithik Valerian - UI/UX designer
+- Mithun Savio - Overall tester
 
 **Approach:**
 - Chose this problem for its massive real-world impact and underserved community.
@@ -34,18 +35,14 @@ AUTIMATE solves the critical challenges faced by individuals with Autism Spectru
 
 **Core Technologies Used:**
 
-- **Frontend:** React Native
+- **Frontend:** HTML/CSS/JavaScript
 - **Backend:** Node.js
 - **Database:** Firebase
-- **APIs:** Google Maps API (for geofencing), Speech Recognition API
+- **APIs:** GROQ API, Google Maps API (for geofencing), Speech Recognition API
 - **Hosting:** Vercel (Backend), App Stores (Frontend)
 
 **Sponsor Technologies Used:**
 - **Groq:** Used for ultra-fast AI model inference for speech and social interaction simulation.
-- **Fluvio:** Real-time tracking of user locations for caregiver alerts.
-- **Base:** Implemented Smart Wallet feature for reward systems.
-- **Screenpipe:** For analyzing sensory tool engagement and feedback loops.
-
 ---
 
 ## ✨ Key Features
@@ -62,16 +59,13 @@ AUTIMATE solves the critical challenges faced by individuals with Autism Spectru
 
 ## 📽️ Demo & Deliverables
 
-- **Demo Video Link:** [Paste YouTube or Loom link here]
-- **Pitch Deck / PPT Link:** [Paste Google Slides / PDF link here]
+- **Demo Video Link:** [https://www.loom.com/share/7c68ae59d46b417bab7e0b9f1c033a8d?sid=7dd12a11-a573-4f1c-9869-8ecd92d23d68 ]
 
 ---
 
 ## ✅ Tasks & Bonus Checklist
 
 - ✅ All members followed at least 2 social channels and filled the form
-- ✅ All members completed Bonus Task 1 (Badge sharing)
-- ✅ All members completed Bonus Task 2 (Signed up for Sprint.dev)
 
 ---
 
@@ -79,8 +73,7 @@ AUTIMATE solves the critical challenges faced by individuals with Autism Spectru
 
 **Requirements:**
 - Node.js
-- Firebase Account
-- API Keys for Google Maps API, Speech Recognition API
+- API Keys for Groq API, Google Maps API, Speech Recognition API
 - `.env` file with API Keys
 
 **Local Setup:**
