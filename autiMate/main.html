@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Autimate</title>
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      background: #1e1e2f; /* dark calming blueish background */
+      font-family: Arial, sans-serif;
+      color: #ffffff;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      justify-content: center; /* centers vertically */
+      align-items: center; /* centers horizontally */
+      padding: 20px;
+      position: relative; /* important for chatbot positioning */
+    }
+
+    h1 {
+      margin-bottom: 40px;
+      font-size: 36px;
+      color: #a0c4ff; /* soft light blue */
+    }
+
+    .grid-container {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr); /* 2 columns */
+      gap: 30px;
+      max-width: 600px;
+      width: 100%;
+    }
+
+    .game-card {
+      background: #2d2d44; /* slightly lighter dark blue */
+      border-radius: 20px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+      padding: 40px;
+      text-align: center;
+      height: 200px; /* Make cards more square/cubic */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .game-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.6);
+    }
+
+    .game-card a {
+      text-decoration: none;
+      color: #d0bdf4; /* calm lavender color for text */
+      font-size: 22px;
+      font-weight: bold;
+    }
+
+    /* Chatbot styles */
+    .chatbot-button {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background-color: #6a8caf; /* Soft calming blue */
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      font-size: 30px;
+      cursor: pointer;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+      z-index: 1000;
+    }
+
+    /* Floating message */
+    .chatbot-message {
+      position: fixed;
+      bottom: 90px; /* slightly above the chatbot button */
+      right: 30px;
+      background-color: #ffffff;
+      color: #333;
+      padding: 8px 14px;
+      border-radius: 20px;
+      font-size: 14px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      white-space: nowrap;
+      animation: fadeIn 1s ease-in-out;
+      z-index: 1001;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px);}
+      to { opacity: 1; transform: translateY(0);}
+    }
+
+    /* Chatbot page layout (for chat.html) */
+    .chatbot-page {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      background: #2d2d44;
+      padding: 10px;
+      justify-content: flex-end;
+    }
+
+    .chatbot-header {
+      background: #6a8caf;
+      padding: 15px;
+      text-align: center;
+      font-weight: bold;
+      font-size: 24px;
+    }
+
+    .chatbot-messages {
+      flex: 1;
+      padding: 10px;
+      overflow-y: auto;
+      font-size: 14px;
+      height: calc(100vh - 200px);
+    }
+
+    .chatbot-input {
+      display: flex;
+      border-top: 1px solid #555;
+      padding: 10px;
+    }
+
+    .chatbot-input input {
+      flex: 1;
+      padding: 10px;
+      background: #404060;
+      border: none;
+      color: white;
+    }
+
+    .chatbot-input button {
+      background: #6a8caf;
+      border: none;
+      padding: 10px;
+      color: white;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>☺️ Welcome to Autimate, buddies</h1>
+
+  <div class="grid-container">
+    <div class="game-card">
+      <a href="color/index.html">Color, who?</a>
+    </div>
+    <div class="game-card">
+      <a href="emotion/emo.html">Find the emotions</a>
+    </div>
+    <div class="game-card">
+      <a href="Hamster/h.html">Hit the hamster folks</a>
+    </div>
+    <div class="game-card">
+      <a href="shell/shell.html">Where's the shell at?</a>
+    </div>
+  </div>
+
+  <!-- Floating Chatbot Message -->
+  <div class="chatbot-message" id="chatbotMessage">Hey, Kelly here 👋</div>
+
+  <!-- Chatbot Button -->
+  <button class="chatbot-button" onclick="openChatbotPage()">💬</button>
+
+  <script>
+    function openChatbotPage() {
+      // Redirect to the chatbot page
+      window.location.href = 'chat.html';
+    }
+
+    // OPTIONAL: Make the message disappear after 5 seconds
+    setTimeout(function() {
+      var message = document.getElementById('chatbotMessage');
+      if (message) {
+        message.style.display = 'none';
+      }
+    }, 5000);
+  </script>
+
+</body>
+</html>

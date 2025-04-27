@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Chatbot - Kelly</title>
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      background: #1e1e2f;
+      font-family: Arial, sans-serif;
+      color: #ffffff;
+    }
+
+    .chatbot-page {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      background: #2d2d44;
+      padding: 10px;
+      justify-content: flex-end;
+    }
+
+    .chatbot-header {
+      background: #6a8caf;
+      padding: 15px;
+      text-align: center;
+      font-weight: bold;
+      font-size: 24px;
+    }
+
+    .chatbot-messages {
+      flex: 1;
+      padding: 10px;
+      overflow-y: auto;
+      font-size: 14px;
+      height: calc(100vh - 200px);
+    }
+
+    .chatbot-input {
+      display: flex;
+      border-top: 1px solid #555;
+      padding: 10px;
+    }
+
+    .chatbot-input input {
+      flex: 1;
+      padding: 10px;
+      background: #404060;
+      border: none;
+      color: white;
+    }
+
+    .chatbot-input button {
+      background: #6a8caf;
+      border: none;
+      padding: 10px;
+      color: white;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="chatbot-page">
+    <div class="chatbot-header">Kelly ☺️</div>
+    <div class="chatbot-messages" id="chatbotMessages"></div>
+    <div class="chatbot-input">
+      <input type="text" id="chatbotInput" placeholder="Type a message...">
+      <button onclick="sendMessage()">Send</button>
+    </div>
+  </div>
+
+  <script>
+    window.onload = () => {
+      appendMessage('Kelly', 'Hey, how are you doing today?');
+
+      const input = document.getElementById('chatbotInput');
+      input.addEventListener('keydown', function(event) {
+        if (event.key === 'Enter') {
+          event.preventDefault(); // Prevent any default form submission
+          sendMessage();
+        }
+      });
+    };
+
+    async function sendMessage() {
+      const input = document.getElementById('chatbotInput');
+      const message = input.value.trim();
+      if (message === '') return;
+
+      appendMessage('You', message);
+      input.value = '';
+
+      try {
+        const response = await fetch('http://localhost:5000/chat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ message })
+        });
+
+        const data = await response.json();
+        appendMessage('Kelly', data.reply);
+      } catch (error) {
+        console.error('Error:', error);
+        appendMessage('Kelly', 'Sorry, something went wrong.');
+      }
+    }
+
+    function appendMessage(sender, text) {
+      const messageContainer = document.getElementById('chatbotMessages');
+      const messageDiv = document.createElement('div');
+      messageDiv.textContent = `${sender}: ${text}`;
+      messageDiv.style.marginBottom = '10px';
+      messageContainer.appendChild(messageDiv);
+      messageContainer.scrollTop = messageContainer.scrollHeight;
+    }
+  </script>
+
+</body>
+</html>
