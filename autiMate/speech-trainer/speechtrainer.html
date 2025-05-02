@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="A speech pronunciation trainer to improve your English pronunciation">
+    <title>Speech Pronunciation Trainer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Core color palette */
+            --primary: #4361ee;
+            --primary-dark: #3a56d4;
+            --secondary: #3f37c9;
+            --accent: #4cc9f0;
+            --accent-light: #72efdd;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --white: #ffffff;
+           
+            /* Feedback colors */
+            --success: #2dc653;
+            --success-light: #d9f2e1;
+            --warning: #ff9e00;
+            --warning-light: #fff3e0;
+            --danger: #e63946;
+            --danger-light: #f8d7da;
+           
+            /* UI colors */
+            --gray-100: #f8f9fa;
+            --gray-200: #e9ecef;
+            --gray-300: #dee2e6;
+            --gray-400: #ced4da;
+            --gray-500: #adb5bd;
+            --gray-600: #6c757d;
+            --gray-700: #495057;
+            --gray-800: #343a40;
+           
+            /* Animation speeds */
+            --transition-fast: 150ms;
+            --transition-normal: 250ms;
+            --transition-slow: 350ms;
+           
+            /* Spacing */
+            --space-xs: 0.25rem;
+            --space-sm: 0.5rem;
+            --space-md: 1rem;
+            --space-lg: 1.5rem;
+            --space-xl: 2rem;
+            --space-xxl: 3rem;
+           
+            /* Shadows */
+            --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+           
+            /* Border radius */
+            --radius-sm: 4px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --radius-xl: 16px;
+            --radius-full: 9999px;
+        }
+
+        /* Reset & base styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            background-color: var(--light);
+            color: var(--dark);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Typography */
+        h1, h2, h3, h4, h5, h6 {
+            line-height: 1.2;
+            font-weight: 700;
+            margin-bottom: var(--space-md);
+        }
+
+        h1 {
+            font-size: 2rem;
+            color: var(--primary);
+            position: relative;
+            display: inline-block;
+            margin-bottom: var(--space-xl);
+        }
+
+        h1::after {
+            content: "";
+            position: absolute;
+            bottom: -8px;
+            left: 25%;
+            right: 25%;
+            height: 3px;
+            background: linear-gradient(to right, var(--primary), var(--accent));
+            border-radius: var(--radius-full);
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            color: var(--secondary);
+            margin-bottom: var(--space-lg);
+        }
+
+        p {
+            margin-bottom: var(--space-md);
+        }
+
+        /* Layout */
+        .container {
+            width: 92%;
+            max-width: 800px;
+            margin: var(--space-xl) auto;
+            background-color: var(--white);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            padding: var(--space-xl);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Card with slight gradient overlay */
+        .container::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(to right, var(--primary), var(--accent));
+        }
+
+        /* Progress indicator */
+        .level-indicator {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-md);
+            color: var(--gray-700);
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .level-badge {
+            background-color: var(--primary);
+            color: white;
+            border-radius: var(--radius-full);
+            padding: 0.25rem 0.75rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .level-badge svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 8px;
+            background-color: var(--gray-200);
+            border-radius: var(--radius-full);
+            margin-bottom: var(--space-xl);
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(to right, var(--primary), var(--accent));
+            border-radius: var(--radius-full);
+            width: 0%;
+            transition: width var(--transition-normal) cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Word display */
+        .word-display-container {
+            background-color: var(--gray-100);
+            border-radius: var(--radius-lg);
+            padding: var(--space-xl);
+            margin: var(--space-xl) 0;
+            position: relative;
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+        }
+
+        .pronunciation-hint {
+            font-size: 0.95rem;
+            color: var(--gray-600);
+            margin-top: var(--space-sm);
+            font-style: italic;
+        }
+
+        .word-display {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-align: center;
+            margin: var(--space-md) 0;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition-normal) ease;
+        }
+
+        /* Status messages */
+        .status {
+            min-height: 60px;
+            margin: var(--space-lg) 0;
+            font-size: 1.1rem;
+            font-weight: 500;
+            text-align: center;
+            transition: all var(--transition-fast);
+        }
+
+        .status-message {
+            border-radius: var(--radius-md);
+            padding: var(--space-md) var(--space-lg);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-sm);
+        }
+
+        .success-message {
+            background-color: var(--success-light);
+            color: var(--success);
+        }
+
+        .try-again-message {
+            background-color: var(--warning-light);
+            color: var(--warning);
+        }
+
+        .error-message {
+            background-color: var(--danger-light);
+            color: var(--danger);
+        }
+
+        /* Button styles */
+        .button-container {
+            display: flex;
+            gap: var(--space-md);
+            justify-content: center;
+            margin: var(--space-lg) 0;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: var(--radius-full);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        button:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.3);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-secondary {
+            background-color: var(--accent);
+            color: white;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background-color: #3bb5db;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-success {
+            background-color: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover:not(:disabled) {
+            background-color: #25a244;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-large {
+            padding: 1rem 2rem;
+            font-size: 1.2rem;
+        }
+
+        /* Instructions */
+        .instructions {
+            background-color: var(--gray-100);
+            border-radius: var(--radius-lg);
+            padding: var(--space-xl);
+            margin-bottom: var(--space-xl);
+        }
+
+        .instructions h2 {
+            margin-top: 0;
+        }
+
+        .instructions ol {
+            margin-left: var(--space-md);
+            padding-left: var(--space-md);
+        }
+
+        .instructions li {
+            margin-bottom: var(--space-md);
+            position: relative;
+        }
+
+        .instructions li::marker {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        /* Animation elements */
+        .pulse {
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(0.95); }
+        }
+
+        .listening-animation {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: var(--space-sm);
+        }
+
+        .listening-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: currentColor;
+            margin: 0 2px;
+        }
+
+        .listening-dot:nth-child(1) {
+            animation: bounce 1.4s -0.32s infinite ease-in-out;
+        }
+
+        .listening-dot:nth-child(2) {
+            animation: bounce 1.4s -0.16s infinite ease-in-out;
+        }
+
+        .listening-dot:nth-child(3) {
+            animation: bounce 1.4s 0s infinite ease-in-out;
+        }
+
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+
+        /* Confetti elements */
+        .confetti-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+            overflow: hidden;
+        }
+
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            opacity: 0.7;
+            animation: fall linear forwards;
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translateY(-100px) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        /* Screens */
+        .screen {
+            width: 100%;
+        }
+
+        #training-screen {
+            display: none;
+        }
+
+        /* Level up animation */
+        .level-up-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity var(--transition-normal);
+        }
+
+        .level-up-content {
+            background: white;
+            padding: var(--space-xl);
+            border-radius: var(--radius-lg);
+            text-align: center;
+            transform: scale(0.8);
+            transition: transform var(--transition-normal);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .level-up-animation.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .level-up-animation.active .level-up-content {
+            transform: scale(1);
+        }
+
+        .level-up-title {
+            font-size: 2rem;
+            color: var(--primary);
+            margin-bottom: var(--space-md);
+        }
+
+        /* No speech API warning */
+        .api-warning {
+            background-color: var(--danger-light);
+            color: var(--danger);
+            padding: var(--space-lg);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--space-lg);
+            display: none;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            color: var(--gray-600);
+            font-size: 0.9rem;
+            margin-top: var(--space-xl);
+            padding-bottom: var(--space-md);
+        }
+
+        /* Media queries */
+        @media (max-width: 768px) {
+            .container {
+                width: 95%;
+                padding: var(--space-lg);
+            }
+
+            .word-display {
+                font-size: 2.2rem;
+            }
+
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            .button-container {
+                flex-direction: row;
+                flex-wrap: wrap;
+                gap: var(--space-sm);
+            }
+
+            button {
+                padding: 0.7rem 1.2rem;
+                flex: 1 1 calc(50% - var(--space-sm));
+                min-width: 120px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: var(--space-md);
+                width: 98%;
+            }
+
+            h1 {
+                font-size: 1.6rem;
+            }
+
+            .word-display {
+                font-size: 1.8rem;
+            }
+
+            .button-container {
+                flex-direction: column;
+                gap: var(--space-sm);
+            }
+
+            button {
+                width: 100%;
+                margin-bottom: var(--space-xs);
+            }
+
+            .instructions li {
+                margin-bottom: var(--space-sm);
+            }
+        }
+
+        /* Accessibility focus states */
+        button:focus,
+        a:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.5);
+        }
+
+        /* Skip to content for accessibility */
+        .skip-link {
+            position: absolute;
+            top: -40px;
+            left: 0;
+            background: var(--primary);
+            color: white;
+            padding: 8px;
+            z-index: 100;
+            transition: top 0.3s;
+        }
+
+        .skip-link:focus {
+            top: 0;
+        }
+
+        /* Browser compatibility notice */
+        .browser-notice {
+            background-color: var(--warning-light);
+            color: var(--gray-700);
+            padding: var(--space-md);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--space-lg);
+            font-size: 0.9rem;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <a href="#main-content" class="skip-link">Skip to content</a>
+   
+    <div class="confetti-container" id="confetti-container"></div>
+   
+    <div class="level-up-animation" id="level-up-animation">
+        <div class="level-up-content">
+            <h2 class="level-up-title">Level Up!</h2>
+            <p>Congratulations! You've advanced to level <span id="new-level">2</span></p>
+            <p>Words are getting more challenging!</p>
+            <button class="btn-primary" id="continue-btn">Continue Training</button>
+        </div>
+    </div>
+   
+    <main id="main-content" class="container">
+        <div class="api-warning" id="api-warning">
+            <h3>Browser Support Issue</h3>
+            <p>Your browser does not support the Speech Recognition API. Please use Chrome, Edge, or Safari for the best experience.</p>
+        </div>
+       
+        <div class="browser-notice" id="browser-notice">
+            <strong>Note:</strong> For the best experience, please use Chrome or Edge. Some browsers may have limited support for speech recognition features.
+        </div>
+       
+        <h1>Speech Pronunciation Trainer</h1>
+       
+        <div id="welcome-screen" class="screen">
+            <div class="instructions">
+                <h2>How it works:</h2>
+                <ol>
+                    <li>Click "Start Training" to begin with simple words</li>
+                    <li>Press "Listen" to hear the correct pronunciation</li>
+                    <li>Press "Speak" and pronounce the word clearly</li>
+                    <li>The app will check your pronunciation and give feedback</li>
+                    <li>Words will get progressively more challenging as you succeed</li>
+                </ol>
+            </div>
+            <div class="button-container">
+                <button class="btn-primary btn-large pulse" id="start-btn" aria-label="Start Training">
+                    Start Training
+                </button>
+            </div>
+        </div>
+
+        <div id="training-screen" class="screen">
+            <div class="level-indicator">
+                <div>Progress: <span id="progress-count">0</span>/<span id="total-count">5</span></div>
+                <div class="level-badge">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 2l2.4 7.4H22l-6 4.6 2.3 7-6.3-4.6L5.7 21l2.3-7-6-4.6h7.6z"></path>
+                    </svg>
+                    Level <span id="level-display">1</span>
+                </div>
+            </div>
+           
+            <div class="progress-container" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+
+            <div class="word-display-container">
+                <div class="word-display" id="word-display">Ready?</div>
+                <div class="pronunciation-hint" id="pronunciation-hint"></div>
+            </div>
+
+            <div class="status">
+                <div class="status-message success-message" id="success-message">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                    </svg>
+                    Great job! Pronunciation correct!
+                </div>
+                <div class="status-message try-again-message" id="try-again-message">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                    Let's try again!
+                </div>
+                <div class="status-message error-message" id="error-message">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                    <span id="error-text">There was a problem. Please try again.</span>
+                </div>
+            </div>
+
+            <div class="button-container">
+                <button class="btn-secondary" id="listen-btn" aria-label="Listen to pronunciation">
+                    <span>Listen</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                        <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                        <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+                    </svg>
+                </button>
+               
+                <button class="btn-primary" id="speak-btn" aria-label="Speak the word">
+                    <span>Speak</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                        <line x1="12" y1="19" x2="12" y2="23"></line>
+                        <line x1="8" y1="23" x2="16" y2="23"></line>
+                    </svg>
+                </button>
+               
+                <button class="btn-success" id="next-btn" disabled aria-label="Next word">
+                    <span>Next Word</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </main>
+   
+    <footer class="footer">
+        <p>&copy; 2025 Speech Pronunciation Trainer</p>
+    </footer>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // App namespace to prevent global scope pollution
+        const SpeechTrainer = {
+            // Configuration
+            config: {
+                totalWordsPerLevel: 5,
+                levelUpAnimationDuration: 2000,
+                confettiCount: 100,
+                speechLang: 'en-US',
+                voiceURI: null, // Will be set dynamically
+                speechRate: 0.9,
+                speechPitch: 1
+            },
+           
+            // DOM Elements
+            elements: {
+                // Screens
+                apiWarning: document.getElementById('api-warning'),
+                browserNotice: document.getElementById('browser-notice'),
+                welcomeScreen: document.getElementById('welcome-screen'),
+                trainingScreen: document.getElementById('training-screen'),
+               
+                // Controls
+                startBtn: document.getElementById('start-btn'),
+                listenBtn: document.getElementById('listen-btn'),
+                speakBtn: document.getElementById('speak-btn'),
+                nextBtn: document.getElementById('next-btn'),
+                continueBtn: document.getElementById('continue-btn'),
+               
+                // Display elements
+                wordDisplay: document.getElementById('word-display'),
+                pronunciationHint: document.getElementById('pronunciation-hint'),
+                successMessage: document.getElementById('success-message'),
+                tryAgainMessage: document.getElementById('try-again-message'),
+                errorMessage: document.getElementById('error-message'),
+                errorText: document.getElementById('error-text'),
+                levelDisplay: document.getElementById('level-display'),
+                progressBar: document.getElementById('progress-bar'),
+                progressCount: document.getElementById('progress-count'),
+                totalCount: document.getElementById('total-count'),
+                newLevel: document.getElementById('new-level'),
+                confettiContainer: document.getElementById('confetti-container'),
+                levelUpAnimation: document.getElementById('level-up-animation')
+            },
+           
+            // App state
+            state: {
+                currentLevel: 1,
+                wordsCorrect: 0,
+                currentWord: '',
+                isRecognitionActive: false,
+                usedWords: new Set(),
+                userStats: {
+                    correctWords: 0,
+                    attemptsCount: 0,
+                    startTime: null
+                }
+            },
+           
+            // Word lists by difficulty level
+            wordsByLevel: {
+                1: [
+                    { word: 'cat', hint: '/kæt/' },
+                    { word: 'dog', hint: '/dɔg/' },
+                    { word: 'sun', hint: '/sʌn/' },
+                    { word: 'hat', hint: '/hæt/' },
+                    { word: 'big', hint: '/bɪg/' },
+                    { word: 'run', hint: '/rʌn/' },
+                    { word: 'red', hint: '/rɛd/' },
+                    { word: 'sit', hint: '/sɪt/' },
+                    { word: 'cup', hint: '/kʌp/' },
+                    { word: 'top', hint: '/tɑp/' }
+                ],
+                2: [
+                    { word: 'apple', hint: '/ˈæpəl/' },
+                    { word: 'happy', hint: '/ˈhæpi/' },
+                    { word: 'water', hint: '/ˈwɔtər/' },
+                    { word: 'pretty', hint: '/ˈprɪti/' },
+                    { word: 'table', hint: '/ˈteɪbəl/' },
+                    { word: 'window', hint: '/ˈwɪndoʊ/' },
+                    { word: 'yellow', hint: '/ˈjɛloʊ/' },
+                    { word: 'basket', hint: '/ˈbæskɪt/' }
+                ],
+                3: [
+                    { word: 'banana', hint: '/bəˈnænə/' },
+                    { word: 'tomorrow', hint: '/təˈmɑroʊ/' },
+                    { word: 'beautiful', hint: '/ˈbjutəfəl/' },
+                    { word: 'umbrella', hint: '/ʌmˈbrɛlə/' },
+                    { word: 'family', hint: '/ˈfæməli/' },
+                    { word: 'elephant', hint: '/ˈɛləfənt/' },
+                    { word: 'wonderful', hint: '/ˈwʌndərfəl/' }
+                ],
+                4: [
+                    { word: 'appreciate', hint: '/əˈpriʃiˌeɪt/' },
+                    { word: 'comfortable', hint: '/ˈkʌmftərbəl/' },
+                    { word: 'laboratory', hint: '/ˈlæbrəˌtɔri/' },
+                    { word: 'necessary', hint: '/ˈnɛsəˌsɛri/' },
+                    { word: 'temperature', hint: '/ˈtɛmprəʧər/' },
+                    { word: 'vocabulary', hint: '/voʊˈkæbjəˌlɛri/' },
+                    { word: 'interesting', hint: '/ˈɪntrəstɪŋ/' },
+                    { word: 'particularly', hint: '/pərˈtɪkjələrli/' }
+                ],
+                5: [
+                    { word: 'pronunciation', hint: '/prəˌnʌnsiˈeɪʃən/' },
+                    { word: 'specifically', hint: '/spəˈsɪfɪkli/' },
+                    { word: 'simultaneously', hint: '/ˌsaɪməlˈteɪniəsli/' },
+                    { word: 'entrepreneurial', hint: '/ˌɑntrəprəˈnɜriəl/' },
+                    { word: 'enthusiastically', hint: '/ɪnˌθuziˈæstɪkli/' },
+                    { word: 'characteristic', hint: '/ˌkærəktəˈrɪstɪk/' },
+                    { word: 'accessibility', hint: '/əkˌsɛsəˈbɪləti/' }
+                ]
+            },
+           
+            // Speech synthesis and recognition instances
+            speechSynthesis: window.speechSynthesis,
+            speechRecognition: null,
+           
+            // Initialize app
+            init: function() {
+                this.setupSpeechAPI();
+                this.bindEvents();
+                this.updateUI();
+            },
+           
+            // Set up speech APIs
+            setupSpeechAPI: function() {
+                // Check for Speech Recognition API support
+                if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
+                    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                    this.speechRecognition = new SpeechRecognition();
+                    this.speechRecognition.continuous = false;
+                    this.speechRecognition.interimResults = false;
+                    this.speechRecognition.lang = this.config.speechLang;
+                   
+                    // Set up recognition event handlers
+                    this.setupRecognitionEvents();
+                } else {
+                    // Show API warning if speech recognition is not supported
+                    this.elements.apiWarning.style.display = 'block';
+                    this.elements.speakBtn.disabled = true;
+                }
+               
+                // Find the best voice for speech synthesis
+                this.findBestVoice();
+               
+                // Show browser compatibility notice for non-Chrome browsers
+                if (!navigator.userAgent.includes('Chrome') && !navigator.userAgent.includes('Edge')) {
+                    this.elements.browserNotice.style.display = 'block';
+                }
+            },
+           
+            // Set up speech recognition event handlers
+            setupRecognitionEvents: function() {
+                this.speechRecognition.onresult = (event) => {
+                    const last = event.results.length - 1;
+                    const transcript = event.results[last][0].transcript.trim().toLowerCase();
+                   
+                    console.log('Recognition result:', transcript);
+                   
+                    // Compare transcript with current word
+                    this.checkPronunciation(transcript);
+                };
+               
+                this.speechRecognition.onerror = (event) => {
+                    console.error('Speech recognition error:', event.error);
+                    this.stopListening();
+                    this.showMessage('error', `Error: ${event.error}. Please try again.`);
+                };
+               
+                this.speechRecognition.onend = () => {
+                    console.log('Speech recognition ended');
+                    this.stopListening();
+                };
+            },
+           
+            // Find the best voice for synthesis
+            findBestVoice: function() {
+                // Wait for voices to be loaded
+                if (this.speechSynthesis.getVoices().length === 0) {
+                    this.speechSynthesis.addEventListener('voiceschanged', () => this.selectVoice());
+                } else {
+                    this.selectVoice();
+                }
+            },
+           
+            // Select the best voice for the current language
+            selectVoice: function() {
+                const voices = this.speechSynthesis.getVoices();
+               
+                // Try to find a native English voice
+                let voice = voices.find(v =>
+                    v.lang.includes('en-US') && v.localService && !v.name.includes('Google'));
+               
+                // Fall back to any English voice if native not found
+                if (!voice) {
+                    voice = voices.find(v => v.lang.includes('en'));
+                }
+               
+                // If still no voice, use the first available
+                if (!voice && voices.length > 0) {
+                    voice = voices[0];
+                }
+               
+                if (voice) {
+                    this.config.voiceURI = voice.voiceURI;
+                    console.log('Selected voice:', voice.name);
+                }
+            },
+           
+            // Bind event listeners
+            bindEvents: function() {
+                this.elements.startBtn.addEventListener('click', () => this.startTraining());
+                this.elements.listenBtn.addEventListener('click', () => this.speakWord());
+                this.elements.speakBtn.addEventListener('click', () => this.startListening());
+                this.elements.nextBtn.addEventListener('click', () => this.nextWord());
+                this.elements.continueBtn.addEventListener('click', () => this.continueLevelUp());
+            },
+           
+            // Start training mode
+            startTraining: function() {
+                this.state.userStats.startTime = new Date();
+                this.showScreen('training');
+                this.nextWord();
+            },
+           
+            // Update UI elements
+            updateUI: function() {
+                this.elements.levelDisplay.textContent = this.state.currentLevel;
+                this.elements.totalCount.textContent = this.config.totalWordsPerLevel;
+                this.elements.progressCount.textContent = this.state.wordsCorrect;
+               
+                // Update progress bar
+                const progressPercentage = (this.state.wordsCorrect / this.config.totalWordsPerLevel) * 100;
+                this.elements.progressBar.style.width = `${progressPercentage}%`;
+                this.elements.progressBar.setAttribute('aria-valuenow', progressPercentage);
+            },
+           
+            // Show specified screen
+            showScreen: function(screenName) {
+                if (screenName === 'welcome') {
+                    this.elements.welcomeScreen.style.display = 'block';
+                    this.elements.trainingScreen.style.display = 'none';
+                } else if (screenName === 'training') {
+                    this.elements.welcomeScreen.style.display = 'none';
+                    this.elements.trainingScreen.style.display = 'block';
+                }
+            },
+           
+            // Get a random word for current level that hasn't been used recently
+            getRandomWord: function() {
+                const levelWords = this.wordsByLevel[this.state.currentLevel];
+               
+                // Filter out already used words
+                let availableWords = levelWords.filter(wordObj => !this.state.usedWords.has(wordObj.word));
+               
+                // If all words used, reset the used words set
+                if (availableWords.length === 0) {
+                    this.state.usedWords.clear();
+                    availableWords = levelWords;
+                }
+               
+                // Select random word from available words
+                const randomIndex = Math.floor(Math.random() * availableWords.length);
+                const selectedWord = availableWords[randomIndex];
+               
+                // Add to used words set
+                this.state.usedWords.add(selectedWord.word);
+               
+                return selectedWord;
+            },
+           
+            // Move to next word
+            nextWord: function() {
+                // Get next word and update display
+                const wordObj = this.getRandomWord();
+                this.state.currentWord = wordObj.word;
+               
+                this.elements.wordDisplay.textContent = wordObj.word;
+                this.elements.pronunciationHint.textContent = wordObj.hint;
+               
+                // Reset UI state
+                this.elements.nextBtn.disabled = true;
+                this.hideAllMessages();
+            },
+           
+            // Use text-to-speech to pronounce the current word
+            speakWord: function() {
+                if (!this.speechSynthesis) return;
+               
+                // Cancel any ongoing speech
+                this.speechSynthesis.cancel();
+               
+                // Create utterance with current word
+                const utterance = new SpeechSynthesisUtterance(this.state.currentWord);
+                utterance.lang = this.config.speechLang;
+                utterance.rate = this.config.speechRate;
+                utterance.pitch = this.config.speechPitch;
+               
+                // Set voice if available
+                if (this.config.voiceURI) {
+                    const voices = this.speechSynthesis.getVoices();
+                    const voice = voices.find(v => v.voiceURI === this.config.voiceURI);
+                    if (voice) utterance.voice = voice;
+                }
+               
+                // Speak the word
+                this.speechSynthesis.speak(utterance);
+            },
+           
+            // Start listening for user's pronunciation
+            startListening: function() {
+                if (!this.speechRecognition || this.state.isRecognitionActive) return;
+               
+                // Update button text to show listening state
+                this.elements.speakBtn.innerHTML = `
+                    <span>Listening</span>
+                    <div class="listening-animation">
+                        <div class="listening-dot"></div>
+                        <div class="listening-dot"></div>
+                        <div class="listening-dot"></div>
+                    </div>
+                `;
+               
+                this.state.isRecognitionActive = true;
+                this.hideAllMessages();
+               
+                try {
+                    this.speechRecognition.start();
+                } catch (error) {
+                    console.error('Recognition error:', error);
+                    this.stopListening();
+                    this.showMessage('error', 'Could not start speech recognition. Please try again.');
+                }
+            },
+           
+            // Stop listening for user's pronunciation
+            stopListening: function() {
+                if (!this.state.isRecognitionActive) return;
+               
+                // Restore button text
+                this.elements.speakBtn.innerHTML = `
+                    <span>Speak</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                        <line x1="12" y1="19" x2="12" y2="23"></line>
+                        <line x1="8" y1="23" x2="16" y2="23"></line>
+                    </svg>
+                `;
+               
+                this.state.isRecognitionActive = false;
+               
+                try {
+                    this.speechRecognition.stop();
+                } catch (error) {
+                    console.error('Error stopping recognition:', error);
+                }
+            },
+           
+            // Check pronunciation against current word
+            checkPronunciation: function(transcript) {
+                this.state.userStats.attemptsCount++;
+               
+                const currentWord = this.state.currentWord.toLowerCase();
+                const normalizedTranscript = transcript.toLowerCase().trim();
+               
+                // Debug
+                console.log(`Comparing: "${normalizedTranscript}" with "${currentWord}"`);
+               
+                // Check for exact match or close match
+                if (normalizedTranscript === currentWord) {
+                    this.handleCorrectPronunciation();
+                } else if (this.isCloseMatch(normalizedTranscript, currentWord)) {
+                    this.handleCorrectPronunciation();
+                } else {
+                    this.showMessage('try-again', `I heard "${normalizedTranscript}". Let's try again!`);
+                }
+            },
+           
+            // Check if transcript is a close match to target word
+            isCloseMatch: function(transcript, targetWord) {
+                // For single words, we can use a simpler comparison
+                const words = transcript.split(' ');
+               
+                // Check if one of the words exactly matches
+                if (words.includes(targetWord)) {
+                    return true;
+                }
+               
+                // Check if one of the words has slight misspelling but is close
+                for (const word of words) {
+                    if (this.calculateSimilarity(word, targetWord) > 0.8) {
+                        return true;
+                    }
+                }
+               
+                return false;
+            },
+           
+            // Calculate similarity between two strings (0-1)
+            calculateSimilarity: function(a, b) {
+                if (a.length === 0 || b.length === 0) return 0;
+               
+                // Levenshtein distance implementation
+                const matrix = [];
+               
+                // Initialize matrix
+                for (let i = 0; i <= b.length; i++) {
+                    matrix[i] = [i];
+                }
+               
+                for (let j = 0; j <= a.length; j++) {
+                    matrix[0][j] = j;
+                }
+               
+                // Fill matrix
+                for (let i = 1; i <= b.length; i++) {
+                    for (let j = 1; j <= a.length; j++) {
+                        const cost = a[j - 1] === b[i - 1] ? 0 : 1;
+                        matrix[i][j] = Math.min(
+                            matrix[i - 1][j] + 1,      // deletion
+                            matrix[i][j - 1] + 1,      // insertion
+                            matrix[i - 1][j - 1] + cost // substitution
+                        );
+                    }
+                }
+               
+                // Calculate similarity as 1 - normalized distance
+                const maxLength = Math.max(a.length, b.length);
+                const distance = matrix[b.length][a.length];
+                return 1 - (distance / maxLength);
+            },
+           
+            // Handle correct pronunciation from user
+            handleCorrectPronunciation: function() {
+                this.showMessage('success', 'Great job! Pronunciation correct!');
+                this.elements.nextBtn.disabled = false;
+                this.state.wordsCorrect++;
+                this.state.userStats.correctWords++;
+               
+                // Update UI
+                this.updateUI();
+               
+                // Create some confetti for positive reinforcement
+                this.createConfetti(15);
+               
+                // Check if level complete
+                if (this.state.wordsCorrect >= this.config.totalWordsPerLevel) {
+                    setTimeout(() => this.levelUp(), 1500);
+                }
+            },
+           
+            // Level up and increase difficulty
+            levelUp: function() {
+                this.state.currentLevel++;
+                this.state.wordsCorrect = 0;
+               
+                // Update UI with new level
+                this.updateUI();
+               
+                // Show level up animation
+                this.elements.newLevel.textContent = this.state.currentLevel;
+                this.elements.levelUpAnimation.classList.add('active');
+               
+                // Create a lot of confetti to celebrate
+                this.createConfetti(this.config.confettiCount);
+            },
+           
+            // Continue after level up
+            continueLevelUp: function() {
+                this.elements.levelUpAnimation.classList.remove('active');
+                this.nextWord();
+            },
+           
+            // Show status message
+            showMessage: function(type, message) {
+                this.hideAllMessages();
+               
+                if (type === 'success') {
+                    this.elements.successMessage.style.display = 'flex';
+                } else if (type === 'try-again') {
+                    this.elements.tryAgainMessage.textContent = message;
+                    this.elements.tryAgainMessage.style.display = 'flex';
+                } else if (type === 'error') {
+                    this.elements.errorText.textContent = message;
+                    this.elements.errorMessage.style.display = 'flex';
+                }
+            },
+           
+            // Hide all status messages
+            hideAllMessages: function() {
+                this.elements.successMessage.style.display = 'none';
+                this.elements.tryAgainMessage.style.display = 'none';
+                this.elements.errorMessage.style.display = 'none';
+            },
+           
+            // Create confetti animation
+            createConfetti: function(count) {
+                const colors = ['#4361ee', '#4cc9f0', '#72efdd', '#2dc653', '#ffbe0b'];
+               
+                for (let i = 0; i < count; i++) {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                   
+                    // Random position, color, size, and animation duration
+                    const color = colors[Math.floor(Math.random() * colors.length)];
+                    const left = Math.random() * 100;
+                    const width = Math.random() * 10 + 5;
+                    const height = Math.random() * 10 + 5;
+                    const duration = Math.random() * 3 + 2;
+                   
+                    confetti.style.backgroundColor = color;
+                    confetti.style.left = `${left}%`;
+                    confetti.style.width = `${width}px`;
+                    confetti.style.height = `${height}px`;
+                    confetti.style.animationDuration = `${duration}s`;
+                   
+                    this.elements.confettiContainer.appendChild(confetti);
+                   
+                    // Remove confetti after animation completes
+                    setTimeout(() => {
+                        if (confetti.parentNode === this.elements.confettiContainer) {
+                            this.elements.confettiContainer.removeChild(confetti);
+                        }
+                    }, duration * 1000);
+                }
+            }
+        };
+       
+        // Initialize app
+        SpeechTrainer.init();
+    });
+    </script>
+</body>
+</html>

@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inside Out Emotion Game</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f0f8ff;
+            color: #333;
+        }
+       
+        .container {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+       
+        h1 {
+            color: #4a6ea9;
+            text-align: center;
+        }
+       
+        .scenario {
+            font-size: 18px;
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #e6f2ff;
+            border-radius: 8px;
+            border-left: 5px solid #4a6ea9;
+        }
+       
+        .character-container {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+       
+        .character {
+            cursor: pointer;
+            width: 100px;
+            text-align: center;
+            margin: 10px;
+            padding: 10px;
+            border-radius: 10px;
+            transition: transform 0.2s;
+        }
+       
+        .character:hover {
+            transform: scale(1.1);
+        }
+       
+        .character img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid white;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+       
+        .character p {
+            margin-top: 5px;
+            font-weight: bold;
+        }
+       
+        .joy { background-color: #FFDE00; }
+        .sadness { background-color: #5AAFFF; }
+        .anger { background-color: #FF5A5A; }
+        .fear { background-color: #CCAAFF; }
+        .disgust { background-color: #9AFF9A; }
+       
+        .feedback {
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 8px;
+            font-size: 16px;
+            display: none;
+        }
+       
+        .correct {
+            background-color: #d4edda;
+            color: #155724;
+            border-left: 5px solid #28a745;
+        }
+       
+        .incorrect {
+            background-color: #f8d7da;
+            color: #721c24;
+            border-left: 5px solid #dc3545;
+        }
+       
+        .score {
+            text-align: center;
+            font-size: 18px;
+            margin: 20px 0;
+        }
+       
+        .next-btn {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            background-color: #4a6ea9;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            display: none;
+        }
+       
+        .next-btn:hover {
+            background-color: #3a5b8c;
+        }
+       
+        .progress {
+            height: 10px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+       
+        .progress-bar {
+            height: 100%;
+            background-color: #4a6ea9;
+            border-radius: 5px;
+            width: 0%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Inside Out Emotion Game</h1>
+        <p>Can you identify which emotion from Inside Out matches each scenario? Select the character that best represents the emotion described.</p>
+       
+        <div class="progress">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+       
+        <div class="score">Score: <span id="score">0</span> / <span id="total">0</span></div>
+       
+        <div class="scenario" id="scenario">
+            <!-- Scenario content will be inserted here -->
+        </div>
+       
+        <div class="character-container">
+            <div class="character joy" onclick="checkAnswer('Joy')">
+                <img src="/api/placeholder/100/100" alt="Joy">
+                <p>Joy</p>
+            </div>
+            <div class="character sadness" onclick="checkAnswer('Sadness')">
+                <img src="/api/placeholder/100/100" alt="Sadness">
+                <p>Sadness</p>
+            </div>
+            <div class="character anger" onclick="checkAnswer('Anger')">
+                <img src="/api/placeholder/100/100" alt="Anger">
+                <p>Anger</p>
+            </div>
+            <div class="character fear" onclick="checkAnswer('Fear')">
+                <img src="/api/placeholder/100/100" alt="Fear">
+                <p>Fear</p>
+            </div>
+            <div class="character disgust" onclick="checkAnswer('Disgust')">
+                <img src="/api/placeholder/100/100" alt="Disgust">
+                <p>Disgust</p>
+            </div>
+        </div>
+       
+        <div class="feedback" id="feedback">
+            <!-- Feedback will be inserted here -->
+        </div>
+       
+        <button class="next-btn" id="next-btn" onclick="nextScenario()">Next Scenario</button>
+    </div>
+   
+    <script>
+        // Game variables
+        let currentScenarioIndex = 0;
+        let score = 0;
+        let scenarios = [
+            {
+                text: "Riley is about to give a speech in front of the entire school. Her heart is racing, her palms are sweaty, and she keeps thinking about all the things that could go wrong.",
+                answer: "Fear",
+                explanation: "Fear helps us anticipate and react to potential threats or dangers."
+            },
+            {
+                text: "Riley just won the hockey championship! She's jumping up and down, smiling, and can't wait to celebrate with her teammates.",
+                answer: "Joy",
+                explanation: "Joy comes from positive experiences and achievements."
+            },
+            {
+                text: "Riley's family moved to a new city, and she misses her old friends. She looks at photos from her old home and feels a heaviness in her heart.",
+                answer: "Sadness",
+                explanation: "Sadness helps us process loss and connect with others through empathy."
+            },
+            {
+                text: "Riley's parents won't let her go to the concert she's been looking forward to for months. She slams her door and feels her face getting hot.",
+                answer: "Anger",
+                explanation: "Anger arises when we face obstacles or injustice."
+            },
+            {
+                text: "Riley's friend offers her a broccoli and sardine pizza. She wrinkles her nose and pushes the plate away.",
+                answer: "Disgust",
+                explanation: "Disgust helps us avoid things that might be harmful or unpleasant."
+            },
+            {
+                text: "Riley sees a spider crawling on her bedroom wall. She freezes in place, her eyes wide, unable to move closer.",
+                answer: "Fear",
+                explanation: "Fear triggers our fight-or-flight response to keep us safe."
+            },
+            {
+                text: "Riley is playing with her dog, laughing as he does silly tricks. Everything feels perfect in this moment.",
+                answer: "Joy",
+                explanation: "Joy comes from moments of connection, play, and when things go well."
+            },
+            {
+                text: "Riley watches a movie where the main character's best friend moves away. She feels tears welling up in her eyes.",
+                answer: "Sadness",
+                explanation: "Sadness helps us connect with others' experiences and process difficult emotions."
+            },
+            {
+                text: "Riley discovers someone took her lunch from the school refrigerator. She clenches her fists and feels heat rising to her face.",
+                answer: "Anger",
+                explanation: "Anger helps us recognize when our boundaries have been violated."
+            },
+            {
+                text: "Riley's brother burps loudly at the dinner table. She rolls her eyes and moves her chair away from him.",
+                answer: "Disgust",
+                explanation: "Disgust helps us maintain social standards and avoid unpleasant situations."
+            }
+        ];
+       
+        // Initialize the game
+        function initGame() {
+            document.getElementById("total").textContent = scenarios.length;
+            showScenario();
+        }
+       
+        // Display current scenario
+        function showScenario() {
+            const scenario = scenarios[currentScenarioIndex];
+            document.getElementById("scenario").textContent = scenario.text;
+           
+            // Update progress bar
+            const progressPercentage = (currentScenarioIndex / scenarios.length) * 100;
+            document.getElementById("progress-bar").style.width = progressPercentage + "%";
+           
+            // Hide feedback and next button
+            document.getElementById("feedback").style.display = "none";
+            document.getElementById("next-btn").style.display = "none";
+           
+            // Enable all character options
+            const characters = document.getElementsByClassName("character");
+            for (let i = 0; i < characters.length; i++) {
+                characters[i].style.opacity = "1";
+                characters[i].style.pointerEvents = "auto";
+            }
+        }
+       
+        // Check if the answer is correct
+        function checkAnswer(selectedEmotion) {
+            const scenario = scenarios[currentScenarioIndex];
+            const feedbackElement = document.getElementById("feedback");
+           
+            // Disable all character options
+            const characters = document.getElementsByClassName("character");
+            for (let i = 0; i < characters.length; i++) {
+                characters[i].style.opacity = "0.5";
+                characters[i].style.pointerEvents = "none";
+            }
+           
+            // Highlight the selected character
+            const selectedCharacter = document.querySelector(`.${selectedEmotion.toLowerCase()}`);
+            if (selectedCharacter) {
+                selectedCharacter.style.opacity = "1";
+            }
+           
+            // Highlight the correct character if the answer is wrong
+            if (selectedEmotion !== scenario.answer) {
+                const correctCharacter = document.querySelector(`.${scenario.answer.toLowerCase()}`);
+                if (correctCharacter) {
+                    correctCharacter.style.opacity = "1";
+                }
+            }
+           
+            // Check if the answer is correct
+            if (selectedEmotion === scenario.answer) {
+                feedbackElement.className = "feedback correct";
+                feedbackElement.innerHTML = `<strong>Correct!</strong> ${scenario.explanation}`;
+                score++;
+                document.getElementById("score").textContent = score;
+            } else {
+                feedbackElement.className = "feedback incorrect";
+                feedbackElement.innerHTML = `<strong>Not quite.</strong> The emotion is ${scenario.answer}. ${scenario.explanation}`;
+            }
+           
+            // Show feedback and next button
+            feedbackElement.style.display = "block";
+           
+            if (currentScenarioIndex < scenarios.length - 1) {
+                document.getElementById("next-btn").style.display = "block";
+            } else {
+                // Game is over
+                document.getElementById("next-btn").textContent = "See Results";
+                document.getElementById("next-btn").style.display = "block";
+                document.getElementById("next-btn").onclick = showResults;
+            }
+        }
+       
+        // Move to the next scenario
+        function nextScenario() {
+            currentScenarioIndex++;
+            showScenario();
+        }
+       
+        // Show final results
+        function showResults() {
+            const totalScenarios = scenarios.length;
+            const finalScore = score;
+            const percentage = Math.round((finalScore / totalScenarios) * 100);
+           
+            let message = "";
+            if (percentage >= 90) {
+                message = "Amazing! You're an emotion expert!";
+            } else if (percentage >= 70) {
+                message = "Great job! You have good emotional intelligence!";
+            } else if (percentage >= 50) {
+                message = "Good effort! Keep practicing to improve your emotional awareness.";
+            } else {
+                message = "Keep practicing! Understanding emotions takes time.";
+            }
+           
+            document.getElementById("scenario").innerHTML = `
+                <h2>Game Over!</h2>
+                <p>You scored ${finalScore} out of ${totalScenarios} (${percentage}%).</p>
+                <p>${message}</p>
+                <p>Want to play again?</p>
+            `;
+           
+            document.getElementById("next-btn").textContent = "Play Again";
+            document.getElementById("next-btn").onclick = resetGame;
+        }
+       
+        // Reset the game
+        function resetGame() {
+            currentScenarioIndex = 0;
+            score = 0;
+            document.getElementById("score").textContent = "0";
+           
+            // Shuffle scenarios for variety
+            scenarios.sort(() => Math.random() - 0.5);
+           
+            showScenario();
+        }
+       
+        // Start the game when page loads
+        window.onload = function() {
+            // Shuffle scenarios for variety
+            scenarios.sort(() => Math.random() - 0.5);
+            initGame();
+        };
+    </script>
+</body>
+</html>
+

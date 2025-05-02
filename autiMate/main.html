@@ -2,192 +2,473 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Autimate</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Autimate - Playful Learning Games</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
   <style>
-    html, body {
-      height: 100%;
+    :root {
+      --primary: #6a8caf;
+      --primary-light: #a0c4ff;
+      --accent: #d0bdf4;
+      --background: #1e1e2f;
+      --card-bg: #2d2d44;
+      --card-hover: #3d3d54;
+      --text: #ffffff;
+      --text-muted: #cccccc;
+    }
+
+    * {
       margin: 0;
       padding: 0;
-      background: #1e1e2f; /* dark calming blueish background */
-      font-family: Arial, sans-serif;
-      color: #ffffff;
+      box-sizing: border-box;
     }
 
     body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--background);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
       display: flex;
       flex-direction: column;
-      justify-content: center; /* centers vertically */
-      align-items: center; /* centers horizontally */
+      align-items: center;
+      justify-content: center;
       padding: 20px;
-      position: relative; /* important for chatbot positioning */
     }
 
-    h1 {
+    .app-header {
       margin-bottom: 40px;
-      font-size: 36px;
-      color: #a0c4ff; /* soft light blue */
+      text-align: center;
     }
 
-    .grid-container {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr); /* 2 columns */
-      gap: 30px;
+    .app-logo {
+      font-size: 36px;
+      font-weight: bold;
+      color: var(--primary-light);
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .app-logo i {
+      color: var(--accent);
+    }
+
+    .app-subtitle {
+      font-size: 18px;
+      color: var(--text-muted);
       max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .games-container {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 30px;
+      max-width: 800px;
       width: 100%;
     }
 
     .game-card {
-      background: #2d2d44; /* slightly lighter dark blue */
+      background: var(--card-bg);
       border-radius: 20px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.5);
-      padding: 40px;
-      text-align: center;
-      height: 200px; /* Make cards more square/cubic */
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      transition: transform 0.2s, box-shadow 0.2s;
+      overflow: hidden;
+      height: 220px;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+      transition: all 0.3s ease;
+      position: relative;
+      cursor: pointer;
     }
 
     .game-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 6px 12px rgba(0,0,0,0.6);
+      transform: translateY(-8px);
+      background: var(--card-hover);
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
     }
 
-    .game-card a {
-      text-decoration: none;
-      color: #d0bdf4; /* calm lavender color for text */
+    .game-card-inner {
+      height: 100%;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .game-icon {
+      font-size: 40px;
+      margin-bottom: 20px;
+      color: var(--primary-light);
+      transition: all 0.3s ease;
+    }
+
+    .game-card:hover .game-icon {
+      transform: scale(1.2);
+      color: var(--accent);
+    }
+
+    .game-title {
       font-size: 22px;
-      font-weight: bold;
+      font-weight: 600;
+      color: var(--accent);
+      transition: all 0.3s ease;
+    }
+
+    .game-card:hover .game-title {
+      transform: scale(1.05);
     }
 
     /* Chatbot styles */
-    .chatbot-button {
+    .chatbot-wrapper {
       position: fixed;
       bottom: 20px;
       right: 20px;
-      background-color: #6a8caf; /* Soft calming blue */
+      z-index: 1000;
+    }
+
+    .chatbot-button {
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
       color: white;
       border: none;
       border-radius: 50%;
       width: 60px;
       height: 60px;
-      font-size: 30px;
-      cursor: pointer;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.4);
-      z-index: 1000;
-    }
-
-    /* Floating message */
-    .chatbot-message {
-      position: fixed;
-      bottom: 90px; /* slightly above the chatbot button */
-      right: 30px;
-      background-color: #ffffff;
-      color: #333;
-      padding: 8px 14px;
-      border-radius: 20px;
-      font-size: 14px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-      white-space: nowrap;
-      animation: fadeIn 1s ease-in-out;
-      z-index: 1001;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px);}
-      to { opacity: 1; transform: translateY(0);}
-    }
-
-    /* Chatbot page layout (for chat.html) */
-    .chatbot-page {
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-      background: #2d2d44;
-      padding: 10px;
-      justify-content: flex-end;
-    }
-
-    .chatbot-header {
-      background: #6a8caf;
-      padding: 15px;
-      text-align: center;
-      font-weight: bold;
       font-size: 24px;
-    }
-
-    .chatbot-messages {
-      flex: 1;
-      padding: 10px;
-      overflow-y: auto;
-      font-size: 14px;
-      height: calc(100vh - 200px);
-    }
-
-    .chatbot-input {
-      display: flex;
-      border-top: 1px solid #555;
-      padding: 10px;
-    }
-
-    .chatbot-input input {
-      flex: 1;
-      padding: 10px;
-      background: #404060;
-      border: none;
-      color: white;
-    }
-
-    .chatbot-input button {
-      background: #6a8caf;
-      border: none;
-      padding: 10px;
-      color: white;
       cursor: pointer;
+      box-shadow: 0 4px 15px rgba(106, 140, 175, 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
     }
+
+    .chatbot-button:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 20px rgba(106, 140, 175, 0.8);
+    }
+
+    .chatbot-message {
+      position: absolute;
+      bottom: 75px;
+      right: 0;
+      background: white;
+      color: #333;
+      padding: 12px 18px;
+      border-radius: 18px;
+      font-size: 15px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+      max-width: 220px;
+      animation: fadeInUp 0.5s ease-out;
+      white-space: nowrap;
+    }
+
+    .chatbot-message::after {
+      content: '';
+      position: absolute;
+      bottom: -8px;
+      right: 24px;
+      width: 15px;
+      height: 15px;
+      background: white;
+      transform: rotate(45deg);
+      box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Loading animation */
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes floatUp {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .app-header {
+      animation: fadeIn 1s ease;
+    }
+
+    .game-card {
+      animation: floatUp 0.6s ease forwards;
+      opacity: 0;
+    }
+
+    .game-card:nth-child(1) { animation-delay: 0.1s; }
+    .game-card:nth-child(2) { animation-delay: 0.2s; }
+    .game-card:nth-child(3) { animation-delay: 0.3s; }
+    .game-card:nth-child(4) { animation-delay: 0.4s; }
+
+    @keyframes fadeOut {
+      from { opacity: 1; }
+      to { opacity: 0; }
+    }
+
+    /* Responsive Styles */
+    @media (max-width: 768px) {
+      .games-container {
+        grid-template-columns: 1fr;
+        max-width: 400px;
+      }
+      
+      .app-logo {
+        font-size: 32px;
+      }
+      
+      .app-subtitle {
+        font-size: 16px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .game-card {
+        height: 180px;
+      }
+      
+      .game-icon {
+        font-size: 32px;
+      }
+      
+      .game-title {
+        font-size: 18px;
+      }
+      
+      .app-logo {
+        font-size: 28px;
+      }
+      
+      .chatbot-button {
+        width: 50px;
+        height: 50px;
+        font-size: 20px;
+      }
+      
+      .chatbot-message {
+        max-width: 200px;
+        font-size: 14px;
+        padding: 10px 15px;
+      }
+    }
+
+    /* .ring-container {
+  position: relative;
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+  margin: 60px auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at center, transparent 40%, var(--card-bg) 42%);
+  animation: fadeIn 1s ease;
+}
+
+.ring-container .game-card {
+  position: absolute;
+  width: 140px;
+  height: 140px;
+  transform: translate(-50%, -50%);
+} */
+
+/* Circle Layout Enhancements */
+.circular-ring {
+  position: relative;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  margin: 80px auto;
+  border: 2px dashed var(--card-hover);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.circular-ring .game-icon {
+  position: absolute;
+  width: 90px;
+  height: 90px;
+  font-size: 24px;
+  background: var(--card-bg);
+  color: var(--primary-light);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform-origin: center 150px;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.circular-ring .game-icon:hover {
+  background: var(--accent);
+  color: white;
+}
+.card-link {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+}
+
+
+.circular-ring .game-icon:hover::after {
+  content: attr(data-title);
+  position: absolute;
+  top: -35px;
+  background: #222;
+  color: #fff;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 13px;
+  white-space: nowrap;
+  pointer-events: none;
+  transform: translateX(-50%);
+  left: 50%;
+  opacity: 0.95;
+}
+
+/* Positioning icons around the circle */
+.circular-ring .game-icon:nth-child(1) {
+  transform: rotate(0deg) translateY(-150px) rotate(0deg);
+}
+.circular-ring .game-icon:nth-child(2) {
+  transform: rotate(72deg) translateY(-150px) rotate(-72deg);
+}
+.circular-ring .game-icon:nth-child(3) {
+  transform: rotate(144deg) translateY(-150px) rotate(-144deg);
+}
+.circular-ring .game-icon:nth-child(4) {
+  transform: rotate(216deg) translateY(-150px) rotate(-216deg);
+}
+.circular-ring .game-icon:nth-child(5) {
+  transform: rotate(288deg) translateY(-150px) rotate(-288deg);
+}
+
+
   </style>
 </head>
 
 <body>
+  <!-- App Header -->
+  <header class="app-header">
+    <div class="app-logo">
+      <span>Autimate</span>
+    </div>
+    <p class="app-subtitle">☺️ Welcome to Autimate, buddies</p>
+  </header>
+  <div class="circular-ring-wrapper">
+  <div class="circular-ring">
+    <div class="game-icon" data-title="Color, who?"><a href="color/index.html"><i class="fas fa-palette"></i></a></div>
+    <div class="game-icon" data-title="Find the emotions"><a href="emotion/emo.html"><i class="fas fa-smile-beam"></i></a></div>
+    <div class="game-icon" data-title="Hit the hamster folks"><a href="Hamster/h.html"><i class="fas fa-drumstick-bite"></i></a></div>
+    <div class="game-icon" data-title="Where's the shell at?"><a href="shell/shell.html"><i class="fas fa-umbrella-beach"></i></a></div>
+    <div class="game-icon" data-title="Can you say it like me?"><a href="speech-trainer/speechtrainer.html"><i class="fas fa-microphone"></i></a></div>
 
-  <h1>☺️ Welcome to Autimate, buddies</h1>
+    <div class="chatbot-wrapper">
+      <div class="chatbot-message" id="chatbotMessage">Hey, Kelly here 👋</div>
+      <button class="chatbot-button" onclick="openChatbotPage()">
+        <i class="fas fa-comments"></i>
+      </button>
+    </div>
+  </div>
+  </div>
+  
 
-  <div class="grid-container">
-    <div class="game-card">
-      <a href="color/index.html">Color, who?</a>
-    </div>
-    <div class="game-card">
-      <a href="emotion/emo.html">Find the emotions</a>
-    </div>
-    <div class="game-card">
-      <a href="Hamster/h.html">Hit the hamster folks</a>
-    </div>
-    <div class="game-card">
-      <a href="shell/shell.html">Where's the shell at?</a>
+  
+  
+  
+  <!-- Games Grid -->
+  <!-- Ring Container for Circular Game Layout -->
+<!-- <div class="ring-container" id="ringContainer">
+  All game cards go here -->
+  <!-- <div class="game-card" data-link="color/index.html">
+    <div class="game-card-inner">
+      <div class="game-icon" data-title="Color, who?">
+      <i class="fas fa-palette"></i>
     </div>
   </div>
 
-  <!-- Floating Chatbot Message -->
-  <div class="chatbot-message" id="chatbotMessage">Hey, Kelly here 👋</div>
+  <div class="game-card" data-link="emotion/emo.html">
+    <div class="game-card-inner">
+      <i class="fas fa-smile-beam game-icon"></i>
+      <h3 class="game-title">Find the emotions</h3>
+    </div>
+  </div>
 
-  <!-- Chatbot Button -->
-  <button class="chatbot-button" onclick="openChatbotPage()">💬</button>
+  <div class="game-card" data-link="Hamster/h.html">
+    <div class="game-card-inner">
+      <i class="fas fa-drumstick-bite game-icon"></i>
+      <h3 class="game-title">Hit the hamster folks</h3>
+    </div>
+  </div>
+
+  <div class="game-card" data-link="shell/shell.html">
+    <div class="game-card-inner">
+      <i class="fas fa-umbrella-beach game-icon"></i>
+      <h3 class="game-title">Where's the shell at?</h3>
+    </div>
+  </div>
+
+  <div class="game-card" data-link="speech-trainer/speechtrainer.html">
+    <div class="game-card-inner">
+      <i class="fas fa-volume-up game-icon"></i>
+      <h3 class="game-title">Can you say it like me??</h3>
+    </div>
+  </div>
+</div> -->
+
+  
 
   <script>
+    // Position game cards in a circular (ring) layout
+const ring = document.getElementById('ringContainer');
+const cards = ring.querySelectorAll('.game-card');
+const radius = 200; // Distance from center
+
+cards.forEach((card, index) => {
+  const angle = (2 * Math.PI / cards.length) * index;
+  const x = radius * Math.cos(angle) + ring.clientWidth / 2;
+  const y = radius * Math.sin(angle) + ring.clientHeight / 2;
+  card.style.left = `${x}px`;
+  card.style.top = `${y}px`;
+
+  // Attach click handler
+  card.addEventListener('click', () => {
+    const link = card.getAttribute('data-link');
+    if (link) window.location.href = link;
+  });
+});
+
+    function navigateTo(url) {
+      window.location.href = url;
+    }
+
     function openChatbotPage() {
-      // Redirect to the chatbot page
       window.location.href = 'chat.html';
     }
 
-    // OPTIONAL: Make the message disappear after 5 seconds
+    // Hide chatbot message after 5 seconds
     setTimeout(function() {
-      var message = document.getElementById('chatbotMessage');
-      if (message) {
+      const message = document.getElementById('chatbotMessage');
+      message.style.animation = 'fadeOut 0.5s forwards';
+      setTimeout(() => {
         message.style.display = 'none';
-      }
+      }, 500);
     }, 5000);
   </script>
-
 </body>
 </html>
