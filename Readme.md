@@ -59,7 +59,7 @@ AUTIMATE solves the critical challenges faced by individuals with Autism Spectru
 
 ## 📽️ Demo & Deliverables
 
-- **Demo Video Link:** [https://www.loom.com/share/7c68ae59d46b417bab7e0b9f1c033a8d?sid=7dd12a11-a573-4f1c-9869-8ecd92d23d68 ]
+- **Demo Video Link:** [https://www.loom.com/share/a81d9db50e1e4104aea588989004aec6?sid=ba6135c8-df44-47e3-a4b4-690666f9949c]
 
 ---
 
