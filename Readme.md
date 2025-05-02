@@ -82,11 +82,9 @@ AUTIMATE solves the critical challenges faced by individuals with Autism Spectru
 # Clone the repository
 git clone https://github.com/navinnaz/autimate
 
-# Install dependencies
+# Install dependencies if needed
 cd autimate
 npm install
 cd chatbot-backend 
 node server.js
 right-click main.html -> open liveserver
-# Start the development server
-npm run dev
